@@ -26,14 +26,20 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql://libri:libri@mariadb:3306/libri
+      DATABASE_URL: mysql://libri:libri@db:3306/libri
       ALLOWED_ORIGINS: http://localhost:5173
     volumes:
       - ./backend:/backend
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "uv sync --locked && uv run litestar run --reload --host 0.0.0.0"
+    command: >
+      sh -c "
+      apk add --no-cache pkgconf gcc mariadb-dev musl-dev &&
+      uv sync --locked &&
+      uv run manage.py migrate &&
+      uv run manage.py runserver 0.0.0.0:8000
+      "
 
   frontend:
     container_name: libri-frontend
