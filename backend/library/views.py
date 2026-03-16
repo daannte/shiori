@@ -1,16 +1,10 @@
 from rest_framework.response import Response
 from library.models import Book
 from library.serializers import BookUploadSerializer, BookSerializer
-from rest_framework.decorators import action
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, status
 
 
-class BookViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class BookViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Book.objects.all()  # ty:ignore[unresolved-attribute]
 

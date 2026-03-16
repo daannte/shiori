@@ -1,32 +1,32 @@
 services:
   db:
     image: mariadb
-    container_name: libri-db
+    container_name: shiori-db
     volumes:
       - db:/var/lib/mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: libri
-      MYSQL_DATABASE: libri
-      MYSQL_USER: libri
-      MYSQL_PASSWORD: libri
+      MYSQL_ROOT_PASSWORD: shiori
+      MYSQL_DATABASE: shiori
+      MYSQL_USER: shiori
+      MYSQL_PASSWORD: shiori
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-plibri" ]
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-pshiori" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   backend:
-    container_name: libri-backend
+    container_name: shiori-backend
     image: ghcr.io/astral-sh/uv:python3.14-alpine
     restart: unless-stopped
     working_dir: /backend
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql://libri:libri@db:3306/libri
+      DATABASE_URL: mysql://shiori:shiori@db:3306/shiori
       ALLOWED_ORIGINS: http://localhost:5173
     volumes:
       - ./backend:/backend
@@ -44,7 +44,7 @@ services:
       "
 
   frontend:
-    container_name: libri-frontend
+    container_name: shiori-frontend
     image: oven/bun:1-alpine
     restart: unless-stopped
     working_dir: /frontend

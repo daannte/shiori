@@ -53,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "libri.urls"
+ROOT_URLCONF = "shiori.urls"
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "libri.wsgi.application"
+WSGI_APPLICATION = "shiori.wsgi.application"
 
 
 DATABASE_URL = os.environ["DATABASE_URL"]
