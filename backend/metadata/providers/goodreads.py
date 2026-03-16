@@ -86,6 +86,9 @@ class GoodreadsProvider(MetadataProvider):
             if author_details is None:
                 continue
 
+            if author_details.get("name") is None:
+                continue
+
             author = Author(
                 name=author_details.get("name", ""),
                 bio=author_details.get("description"),

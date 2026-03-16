@@ -27,7 +27,6 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: mysql://shiori:shiori@db:3306/shiori
-      ALLOWED_ORIGINS: http://localhost:5173
     volumes:
       - ./backend:/backend
       - ./dev/library:/library
@@ -56,7 +55,7 @@ services:
       - "5173:5173"
     environment:
       NODE_ENV: development
-    command: sh -c "bun install && bun run dev --open --host 0.0.0.0 --no-open"
+    command: sh -c "bun install && bun run dev"
 
 volumes:
   db:
