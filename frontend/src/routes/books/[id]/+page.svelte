@@ -3,12 +3,12 @@
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Database, Download } from '@lucide/svelte';
+	import { ArrowLeft, Database, Download } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let metadata = $state.raw<null | Object>(null);
+	let metadata = $state.raw<Object>();
 
 	let externalId = $state('');
 	let loading = $state(false);
@@ -75,7 +75,10 @@
 			</p>
 
 			<div class="mt-auto flex justify-end gap-4 p-4">
-				<!-- Metadata Dialog -->
+				<Button href="/books" aria-label="Back" variant="outline" size="icon" class="mr-auto">
+					<ArrowLeft />
+				</Button>
+
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 						<Database />

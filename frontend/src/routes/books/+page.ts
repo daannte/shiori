@@ -1,6 +1,8 @@
 import type { PageLoad } from "./$types";
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, depends }) => {
+  depends("app:books")
+
   try {
     const res = await fetch('/api/v1/books');
 
