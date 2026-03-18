@@ -1,3 +1,6 @@
+import shutil
+from django.conf import settings
+from pathlib import Path
 from http import HTTPMethod
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -16,6 +19,16 @@ class BookViewSet(viewsets.ModelViewSet):
         elif self.action == "enrich":
             return super().get_serializer_class()
         return BookSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        book = self.get_object()
+
+        path = Path(settings.MEDIA_ROOT) / str(book.id)
+        if path.exists() and path.is_dir():
+            shutil.rmtree(path)
+
+        book.delete()
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
