@@ -1,47 +1,19 @@
 services:
-  db:
-    image: mariadb
-    container_name: shiori-db
-    volumes:
-      - db:/var/lib/mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: shiori
-      MYSQL_DATABASE: shiori
-      MYSQL_USER: shiori
-      MYSQL_PASSWORD: shiori
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-pshiori" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     container_name: shiori-backend
-    image: ghcr.io/astral-sh/uv:python3.14-alpine
+    image: rust:1.94-alpine
     restart: unless-stopped
     working_dir: /backend
     ports:
-      - "8000:8000"
-    environment:
-      DATABASE_URL: mysql://shiori:shiori@db:3306/shiori
-      PYTHONUNBUFFERED: 1
+      - "3000:3000"
+    # environment:
+    #   DATABASE_URL: mysql://shiori:shiori@db:3306/shiori
     volumes:
       - ./backend:/backend
       - ./dev/books:/books
       - ./dev/data:/data
-    depends_on:
-      db:
-        condition: service_healthy
     command: >
-      sh -c "
-      apk add --no-cache pkgconf gcc mariadb-dev mariadb-client musl-dev &&
-      uv sync --locked &&
-      uv run manage.py migrate &&
-      uv run manage.py runserver 0.0.0.0:8000
-      "
+      sh -c "cargo install cargo-watch && cargo watch -x run"
 
   frontend:
     container_name: shiori-frontend
@@ -57,6 +29,3 @@ services:
     environment:
       NODE_ENV: development
     command: sh -c "bun install && bun run dev"
-
-volumes:
-  db:
