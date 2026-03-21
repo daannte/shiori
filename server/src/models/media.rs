@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
-use shiori_core::SqliteConn;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use utoipa::ToSchema;
 
 use crate::schema::media;
@@ -9,7 +8,7 @@ use crate::schema::media;
 /// The model representing a row in the `media` database table.
 #[derive(Debug, HasQuery, ToSchema)]
 #[diesel(table_name = crate::schema::media)]
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Media {
     /// Unique identifier for the media item.
     pub id: i32,
@@ -28,7 +27,7 @@ pub struct Media {
 /// Represents a new media record insertable to the `media` table
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::media)]
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewMedia<'a> {
     pub name: &'a str,
     pub size: i32,
@@ -37,7 +36,7 @@ pub struct NewMedia<'a> {
 }
 
 impl NewMedia<'_> {
-    pub async fn insert(&self, conn: &mut SqliteConn) -> QueryResult<Media> {
+    pub async fn insert(&self, conn: &mut AsyncPgConnection) -> QueryResult<Media> {
         diesel::insert_into(media::table)
             .values(self)
             .returning(Media::as_returning())

@@ -1,21 +1,17 @@
 use std::sync::Arc;
 
-use diesel::SqliteConnection;
 use diesel_async::{
+    AsyncPgConnection,
     pooled_connection::deadpool::{Object, Pool, PoolError},
-    sync_connection_wrapper::SyncConnectionWrapper,
 };
 
 use crate::db;
 
-type WrapperConn = SyncConnectionWrapper<SqliteConnection>;
-pub type SqliteConn = Object<WrapperConn>;
-
-type DeadpoolResult = Result<SqliteConn, PoolError>;
+type DeadpoolResult = Result<Object<AsyncPgConnection>, PoolError>;
 
 #[derive(Clone)]
 pub struct App {
-    pub pool: Arc<Pool<WrapperConn>>,
+    pub pool: Arc<Pool<AsyncPgConnection>>,
 }
 
 impl App {

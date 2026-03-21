@@ -1,13 +1,12 @@
 use std::env;
 
-use diesel::SqliteConnection;
 use diesel_async::{
+    AsyncPgConnection,
     pooled_connection::{AsyncDieselConnectionManager, deadpool::Pool},
-    sync_connection_wrapper::SyncConnectionWrapper,
 };
 use dotenvy::dotenv;
 
-pub fn create_pool() -> Pool<SyncConnectionWrapper<SqliteConnection>> {
+pub fn create_pool() -> Pool<AsyncPgConnection> {
     dotenv().ok();
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");

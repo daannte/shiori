@@ -4,7 +4,6 @@ mod fs;
 mod metadata;
 
 pub use app::App;
-pub use app::SqliteConn;
 
 pub struct ShioriCore {
     app: App,
