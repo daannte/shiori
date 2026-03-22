@@ -1,0 +1,8 @@
+ALTER TABLE media
+ADD COLUMN library_id INTEGER NOT NULL;
+
+ALTER TABLE media
+ADD CONSTRAINT fk_media_library
+FOREIGN KEY (library_id)
+REFERENCES libraries(id)
+ON DELETE CASCADE;
