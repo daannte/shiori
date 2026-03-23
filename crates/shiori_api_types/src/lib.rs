@@ -20,7 +20,7 @@ pub struct EncodableMetadataSearch {
     #[schema(example = "English")]
     pub language: Option<String>,
 
-    /// Date the media item was published.
+    /// Date the media was published.
     #[schema(example = "2019-03-26")]
     pub published_at: Option<NaiveDate>,
 }
