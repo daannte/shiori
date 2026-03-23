@@ -2198,6 +2198,7 @@ dependencies = [
 name = "shiori_api_types"
 version = "0.0.0"
 dependencies = [
+ "chrono",
  "serde",
  "serde_json",
  "shiori_database",
@@ -2233,6 +2234,7 @@ dependencies = [
 name = "shiori_metadata"
 version = "0.0.0"
 dependencies = [
+ "chrono",
  "reqwest",
  "scraper",
  "serde_json",

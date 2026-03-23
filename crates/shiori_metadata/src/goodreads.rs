@@ -1,4 +1,5 @@
 use crate::{errors::MetadataError, provider::MetadataProvider};
+use chrono::DateTime;
 use serde_json::Value;
 use shiori_api_types::EncodableMetadataSearch;
 
@@ -55,6 +56,12 @@ impl MetadataProvider for GoodreadsProvider {
                 .and_then(|l| l.get("name"))
                 .and_then(Value::as_str)
                 .map(String::from);
+
+            metadata.published_at = details
+                .get("publicationTime")
+                .and_then(|time| time.as_i64())
+                .and_then(DateTime::from_timestamp_millis)
+                .map(|datetime| datetime.date_naive())
         }
 
         Ok(metadata)

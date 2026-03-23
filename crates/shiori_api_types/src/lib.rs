@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::Serialize;
 
 #[derive(Default, Serialize, utoipa::ToSchema)]
@@ -18,4 +19,8 @@ pub struct EncodableMetadataSearch {
     /// Language of the media content.
     #[schema(example = "English")]
     pub language: Option<String>,
+
+    /// Date the media item was published.
+    #[schema(example = "2019-03-26")]
+    pub published_at: Option<NaiveDate>,
 }

@@ -17,7 +17,7 @@ pub struct Library {
     pub name: String,
     /// File system path to the library's directory.
     pub path: String,
-    /// The timestamp when the media was created.
+    /// Timestamp of when the media was created.
     pub created_at: DateTime<Utc>,
 }
 

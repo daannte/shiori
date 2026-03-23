@@ -5,11 +5,9 @@ use crate::{
     config::state::AppState,
     errors::{APIError, APIResult},
 };
-use axum::Router;
 use axum::{
     Json,
     extract::{Path, State},
-    routing::get,
 };
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use diesel::prelude::*;
@@ -18,20 +16,18 @@ use shiori_database::models::media::{Media, NewMedia};
 use shiori_database::schema::media;
 use tempfile::NamedTempFile;
 use utoipa::ToSchema;
+use utoipa_axum::{router::OpenApiRouter, routes};
 
-pub fn mount() -> Router<AppState> {
-    Router::new().nest(
-        "/media",
-        Router::new()
-            .route("/", get(list_media).post(upload_media))
-            .route("/{id}", get(get_media)),
-    )
+pub fn mount() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(list_media, upload_media))
+        .routes(routes!(get_media))
 }
 
 // TODO: Pagination
 #[utoipa::path(
     get,
-    path = "/api/v1/media",
+    path = "/media",
     tag = "media",
     responses(
         (status = 200, description = "Successfully fetched media"),
@@ -51,7 +47,7 @@ struct MediaRequest {
 
 #[utoipa::path(
     post,
-    path = "/api/v1/media",
+    path = "/media",
     tag = "media",
     request_body(
         content = MediaRequest,
@@ -112,10 +108,10 @@ async fn upload_media(
 
 #[utoipa::path(
     get,
-    path = "/api/v1/media/{id}",
+    path = "/media/{id}",
     tag = "media",
     params(
-        ("id" = i32, Path, description = "The id of the media to get")
+        ("id" = i32, Path, description = "Id of the media")
     ),
     responses(
         (status = 200, description = "Successfully fetched media", body = Media),

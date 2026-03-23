@@ -3,12 +3,13 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use utoipa::ToSchema;
 
-use crate::schema::media;
+use crate::{models::Library, schema::media};
 use serde::Serialize;
 
 /// The model representing a row in the `media` database table.
-#[derive(Debug, HasQuery, ToSchema, Serialize)]
+#[derive(Debug, HasQuery, ToSchema, Serialize, Associations)]
 #[diesel(table_name = media)]
+#[diesel(belongs_to(Library))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Media {
     /// Unique identifier for the media item.
@@ -19,10 +20,13 @@ pub struct Media {
     pub size: i64,
     /// File system path where the media is stored.
     pub path: String,
-    /// The file extension of the media.
+    /// File extension of the media.
     pub extension: String,
-    /// The timestamp when the media was created.
+    /// Timestamp of when the media was created.
     pub created_at: DateTime<Utc>,
+    /// Foreign key reference to the `libraries` table,
+    /// indicating the library to which this media belongs.
+    pub library_id: i32,
 }
 
 /// Represents a new media record insertable to the `media` table.

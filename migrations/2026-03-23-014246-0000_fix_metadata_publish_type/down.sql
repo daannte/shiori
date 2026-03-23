@@ -1,0 +1,2 @@
+ALTER TABLE media_metadata
+ALTER COLUMN published_at TYPE TIMESTAMPTZ USING published_at::TIMESTAMPTZ;
