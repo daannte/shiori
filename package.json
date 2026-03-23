@@ -1,0 +1,27 @@
+{
+  "name": "shiori",
+  "version": "0.0.0",
+  "author": "Dante",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daannte/shiori"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1",
+    "@shiori/api-client": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "homepage": "https://github.com/daannte/shiori#readme",
+  "private": true,
+  "scripts": {
+    "dev": "conc --names server,web -c magenta,white \"bacon run-long --headless\" \"bun run -F @shiori/web dev\""
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "svelte/"
+  ]
+}

@@ -1,0 +1,321 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "shiori",
+    "description": "TODO DESCRIPTION OF SHIORI",
+    "license": {
+      "name": ""
+    },
+    "version": "0.0.0"
+  },
+  "paths": {
+    "/api/v1/libraries": {
+      "get": {
+        "tags": [
+          "library"
+        ],
+        "summary": "List all libraries.",
+        "operationId": "list_libraries",
+        "responses": {
+          "200": {
+            "description": "Successfully fetched libraries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Library"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "library"
+        ],
+        "summary": "Create a new library.",
+        "operationId": "create_library",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLibraryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created library",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Library"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/libraries/{id}": {
+      "get": {
+        "tags": [
+          "library"
+        ],
+        "summary": "Fetch library by id.",
+        "operationId": "get_library",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the library",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched library"
+          },
+          "404": {
+            "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/libraries/{id}/media": {
+      "get": {
+        "tags": [
+          "library"
+        ],
+        "summary": "List library media.",
+        "operationId": "list_library_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the library",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched library media"
+          },
+          "404": {
+            "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "library"
+        ],
+        "summary": "Upload a new media item to the specified library.",
+        "operationId": "create_library_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the library",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added media to the library"
+          },
+          "404": {
+            "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/metadata/search": {
+      "get": {
+        "tags": [
+          "metadata"
+        ],
+        "summary": "Search for metadata.",
+        "operationId": "search_metadata",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "A search query string.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "The provider to use for the search.\nDefaults to \"goodreads\" if not provided in the query.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully found metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncodableMetadataSearch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EncodableMetadataSearch": {
+        "type": "object",
+        "required": [
+          "authors"
+        ],
+        "properties": {
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of authors associated with the media item.",
+            "example": [
+              "Asato Asato"
+            ]
+          },
+          "isbn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+            "example": "1975303121"
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of the media content.",
+            "example": "English"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Date the media was published.",
+            "example": "2019-03-26"
+          },
+          "publisher": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name of the publisher or publishing organization.",
+            "example": "Yen On"
+          }
+        }
+      },
+      "Library": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "path",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when the media was created.",
+            "example": "2024-11-08T17:23:41Z"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier for the library.",
+            "example": 86
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the library.",
+            "example": "Light Novels"
+          },
+          "path": {
+            "type": "string",
+            "description": "File system path to the library's directory.",
+            "example": "/data/books/light_novels"
+          }
+        }
+      },
+      "NewLibraryRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "path"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the library."
+          },
+          "path": {
+            "type": "string",
+            "description": "File system path to the library's directory."
+          }
+        }
+      }
+    }
+  }
+}
