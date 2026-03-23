@@ -1,13 +1,12 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use utoipa::ToSchema;
 
 use crate::schema::libraries;
 use serde::Serialize;
 
 /// The model representing a row in the `library` database table.
-#[derive(Debug, HasQuery, ToSchema, Serialize)]
+#[derive(Debug, HasQuery, Serialize)]
 #[diesel(table_name = libraries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Library {
@@ -21,6 +20,16 @@ pub struct Library {
     pub created_at: DateTime<Utc>,
 }
 
+impl Library {
+    pub async fn find(conn: &mut AsyncPgConnection, id: i32) -> QueryResult<Library> {
+        Library::query().find(id).first(conn).await
+    }
+
+    pub async fn list_libraries(conn: &mut AsyncPgConnection) -> QueryResult<Vec<Library>> {
+        Library::query().load(conn).await
+    }
+}
+
 /// Represents a new library record insertable to the `libraries` table.
 #[derive(Insertable)]
 #[diesel(table_name = libraries)]
@@ -31,11 +40,11 @@ pub struct NewLibrary<'a> {
 }
 
 impl NewLibrary<'_> {
-    pub async fn insert(&self, conn: &mut AsyncPgConnection) -> QueryResult<Library> {
+    pub async fn insert(&self, mut conn: &AsyncPgConnection) -> QueryResult<Library> {
         diesel::insert_into(libraries::table)
             .values(self)
             .returning(Library::as_returning())
-            .get_result(conn)
+            .get_result(&mut conn)
             .await
     }
 }

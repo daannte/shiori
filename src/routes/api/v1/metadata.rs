@@ -14,6 +14,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().routes(routes!(search_metadata))
 }
 
+/// Search for metadata.
 #[utoipa::path(
     get,
     path = "/metadata/search",

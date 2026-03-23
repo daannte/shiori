@@ -1,13 +1,12 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use utoipa::ToSchema;
 
 use crate::{models::Library, schema::media};
 use serde::Serialize;
 
 /// The model representing a row in the `media` database table.
-#[derive(Debug, HasQuery, ToSchema, Serialize, Associations)]
+#[derive(HasQuery, Serialize, Associations)]
 #[diesel(table_name = media)]
 #[diesel(belongs_to(Library))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
