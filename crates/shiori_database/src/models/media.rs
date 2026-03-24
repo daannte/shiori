@@ -49,6 +49,7 @@ pub struct NewMedia<'a> {
     pub size: i64,
     pub path: &'a str,
     pub extension: &'a str,
+    pub library_id: i32,
 }
 
 impl NewMedia<'_> {

@@ -75,13 +75,13 @@ pub struct EncodableMedia {
     /// Timestamp of when the media was created.
     #[schema(example = "2026-03-23T12:00:00Z")]
     pub created_at: DateTime<Utc>,
-    /// Name of the library this media belongs to.
-    #[schema(example = "Light Novels")]
-    pub library_id: String,
+    /// Library this media belongs to.
+    #[schema(example = 2)]
+    pub library_id: i32,
 }
 
-impl EncodableMedia {
-    pub fn from_media(media: Media, library_name: &str) -> Self {
+impl From<Media> for EncodableMedia {
+    fn from(media: Media) -> Self {
         Self {
             id: media.id,
             name: media.name,
@@ -89,7 +89,7 @@ impl EncodableMedia {
             path: media.path,
             extension: media.extension,
             created_at: media.created_at,
-            library_id: library_name.into(),
+            library_id: media.library_id,
         }
     }
 }

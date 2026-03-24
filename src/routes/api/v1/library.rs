@@ -1,16 +1,23 @@
-use std::fs;
+use std::ffi::OsStr;
 use std::path;
+use tokio::fs;
 
 use axum::{
     Json,
     extract::{Path, State},
 };
+use axum_typed_multipart::FieldData;
+use axum_typed_multipart::TryFromMultipart;
+use axum_typed_multipart::TypedMultipart;
 use serde::Deserialize;
 use shiori_api_types::EncodableLibrary;
 use shiori_api_types::EncodableMedia;
 use shiori_database::models::Library;
 use shiori_database::models::Media;
 use shiori_database::models::NewLibrary;
+use shiori_database::models::NewMedia;
+use tempfile::NamedTempFile;
+use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
@@ -88,9 +95,7 @@ async fn create_library(
     let library = new_library.insert(&mut conn).await?;
 
     // TODO: Make this atomic with the db insert? (if possible)
-    fs::create_dir_all(body.path).map_err(|_| {
-        APIError::InternalServerError("Could not create library directory".to_string())
-    })?;
+    fs::create_dir_all(body.path).await?;
 
     Ok(Json(library.into()))
 }
@@ -133,16 +138,20 @@ async fn list_library_media(
 ) -> APIResult<Json<Vec<EncodableMedia>>> {
     let mut conn = app.db().await?;
 
-    let library = Library::find(&mut conn, library_id).await?;
-
-    let items = Media::find_by_library_id(&mut conn, library_id).await?;
-
-    let media = items
+    let media = Media::find_by_library_id(&mut conn, library_id)
+        .await?
         .into_iter()
-        .map(|m| EncodableMedia::from_media(m, &library.name))
+        .map(Into::into)
         .collect::<Vec<_>>();
 
     Ok(Json(media))
+}
+
+#[derive(TryFromMultipart, ToSchema)]
+struct NewMediaRequest {
+    /// An array of files to upload.
+    #[schema(value_type = Vec<Object>)]
+    files: Vec<FieldData<NamedTempFile>>,
 }
 
 /// Upload a new media item to the specified library.
@@ -153,15 +162,74 @@ async fn list_library_media(
     params(
         ("id" = i32, Path, description = "Id of the library")
     ),
+    request_body(
+        content = NewMediaRequest,
+        content_type = "multipart/form-data"
+    ),
     responses(
-        (status = 200, description = "Successfully added media to the library"),
+        (status = 200, description = "Successfully added media to the library", body = inline(Vec<EncodableMedia>)),
+        (status = 400, description = "Invalid uploaded media"),
         (status = 404, description = "Library not found"),
         (status = 500, description = "Internal server error")
     )
 )]
 async fn create_library_media(
-    Path(_library_id): Path<i32>,
-    State(_app): State<AppState>,
-) -> APIResult<()> {
-    Err(APIError::NotImplemented)
+    Path(library_id): Path<i32>,
+    State(app): State<AppState>,
+    TypedMultipart(body): TypedMultipart<NewMediaRequest>,
+) -> APIResult<Json<Vec<EncodableMedia>>> {
+    // TODO: Refactor this func
+    // TODO: Keep running even if some files fail
+    let mut conn = app.db().await?;
+
+    let mut uploaded: Vec<EncodableMedia> = Vec::new();
+
+    let library = Library::find(&mut conn, library_id).await?;
+
+    for f in body.files {
+        let file_name = f
+            .metadata
+            .file_name
+            .as_deref()
+            .ok_or_else(|| APIError::BadRequest("Media must have a filename.".to_string()))?;
+
+        let ext = path::Path::new(file_name)
+            .extension()
+            .and_then(OsStr::to_str)
+            .map(str::to_ascii_lowercase)
+            .ok_or_else(|| APIError::BadRequest("Media must have an extension.".to_string()))?;
+
+        let media_path = path::Path::new(&library.path).join(file_name);
+
+        if fs::metadata(&media_path).await.is_ok() {
+            return Err(APIError::BadRequest(
+                "Media already exists in library".to_string(),
+            ));
+        }
+
+        let new_media = NewMedia {
+            name: file_name,
+            size: f
+                .contents
+                .as_file()
+                .metadata()
+                .unwrap()
+                .len()
+                .try_into()
+                .unwrap_or_else(|_| {
+                    println!("Failed to convert to i64");
+                    0
+                }),
+            path: &media_path.to_string_lossy().to_string(),
+            extension: &ext,
+            library_id,
+        };
+
+        let media = new_media.insert(&mut conn).await?;
+        uploaded.push(media.into());
+
+        fs::copy(f.contents.path(), media_path).await?;
+    }
+
+    Ok(Json(uploaded))
 }

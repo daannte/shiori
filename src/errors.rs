@@ -67,6 +67,12 @@ impl From<MetadataError> for APIError {
     }
 }
 
+impl From<std::io::Error> for APIError {
+    fn from(error: std::io::Error) -> APIError {
+        APIError::InternalServerError(error.to_string())
+    }
+}
+
 #[derive(Debug)]
 pub struct ApiErrorResponse {
     status: StatusCode,
