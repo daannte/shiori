@@ -22,6 +22,6 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "svelte/"
+    "web/"
   ]
 }
