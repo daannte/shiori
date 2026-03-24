@@ -1,15 +1,15 @@
 {
 	"name": "@shiori/web",
 	"version": "0.0.0",
-  "dependencies": {
-    "@shiori/api-client": "workspace:*"
-  },
+	"dependencies": {
+		"@shiori/api-client": "workspace:*"
+	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
 		"@eslint/js": "^9.39.2",
 		"@internationalized/date": "^3.10.0",
 		"@lucide/svelte": "^0.561.0",
-		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
@@ -37,6 +37,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
+		"prod": "bun run build && bun run preview",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
