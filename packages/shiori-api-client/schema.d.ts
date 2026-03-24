@@ -78,61 +78,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        EncodableMetadataSearch: {
-            /**
-             * @description List of authors associated with the media item.
-             * @example [
-             *       "Asato Asato"
-             *     ]
-             */
-            authors: string[];
-            /**
-             * @description International Standard Book Number (ISBN).
-             *     Typically used for books.
-             * @example 1975303121
-             */
-            isbn?: string | null;
-            /**
-             * @description Language of the media content.
-             * @example English
-             */
-            language?: string | null;
-            /**
-             * Format: date
-             * @description Date the media was published.
-             * @example 2019-03-26
-             */
-            published_at?: string | null;
-            /**
-             * @description Name of the publisher or publishing organization.
-             * @example Yen On
-             */
-            publisher?: string | null;
-        };
-        Library: {
-            /**
-             * Format: date-time
-             * @description Timestamp of when the media was created.
-             * @example 2024-11-08T17:23:41Z
-             */
-            created_at: string;
-            /**
-             * Format: int32
-             * @description Unique identifier for the library.
-             * @example 86
-             */
-            id: number;
-            /**
-             * @description Name of the library.
-             * @example Light Novels
-             */
-            name: string;
-            /**
-             * @description File system path to the library's directory.
-             * @example /data/books/light_novels
-             */
-            path: string;
-        };
         NewLibraryRequest: {
             /** @description Name of the library. */
             name: string;
@@ -163,7 +108,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Library"][];
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the media was created.
+                         * @example 2024-11-08T17:23:41Z
+                         */
+                        created_at: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the library.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Name of the library.
+                         * @example Light Novels
+                         */
+                        name: string;
+                        /**
+                         * @description File system path to the library's directory.
+                         * @example /data/books/light_novels
+                         */
+                        path: string;
+                    }[];
                 };
             };
             /** @description Internal server error */
@@ -194,7 +162,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Library"];
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the media was created.
+                         * @example 2024-11-08T17:23:41Z
+                         */
+                        created_at: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the library.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Name of the library.
+                         * @example Light Novels
+                         */
+                        name: string;
+                        /**
+                         * @description File system path to the library's directory.
+                         * @example /data/books/light_novels
+                         */
+                        path: string;
+                    };
                 };
             };
             /** @description Invalid request body */
@@ -265,7 +256,48 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the media was created.
+                         * @example 2026-03-23T12:00:00Z
+                         */
+                        created_at: string;
+                        /**
+                         * @description File extension of the media.
+                         * @example epub
+                         */
+                        extension: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the media item.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Name of the library this media belongs to.
+                         * @example Light Novels
+                         */
+                        library_id: string;
+                        /**
+                         * @description Name of the media file, excluding extension.
+                         * @example 86_Volume_1
+                         */
+                        name: string;
+                        /**
+                         * @description File system path where the media is stored.
+                         * @example /data/books/light_novels/86_Volume_1.epub
+                         */
+                        path: string;
+                        /**
+                         * Format: int64
+                         * @description Size of the media file in bytes.
+                         * @example 102400
+                         */
+                        size: number;
+                    };
+                };
             };
             /** @description Library not found */
             404: {
@@ -341,7 +373,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EncodableMetadataSearch"];
+                    "application/json": {
+                        /**
+                         * @description List of authors associated with the media item.
+                         * @example [
+                         *       "Asato Asato"
+                         *     ]
+                         */
+                        authors: string[];
+                        /**
+                         * @description International Standard Book Number (ISBN).
+                         *     Typically used for books.
+                         * @example 1975303121
+                         */
+                        isbn?: string | null;
+                        /**
+                         * @description Language of the media content.
+                         * @example English
+                         */
+                        language?: string | null;
+                        /**
+                         * Format: date
+                         * @description Date the media was published.
+                         * @example 2019-03-26
+                         */
+                        published_at?: string | null;
+                        /**
+                         * @description Name of the publisher or publishing organization.
+                         * @example Yen On
+                         */
+                        publisher?: string | null;
+                    };
                 };
             };
             /** @description Invalid query parameters */

@@ -7,6 +7,7 @@ use axum::{
 };
 use serde::Deserialize;
 use shiori_api_types::EncodableLibrary;
+use shiori_api_types::EncodableMedia;
 use shiori_database::models::Library;
 use shiori_database::models::NewLibrary;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -29,7 +30,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
     path = "/libraries",
     tag = "library",
     responses(
-        (status = 200, description = "Successfully fetched libraries", body = Vec<EncodableLibrary>),
+        (status = 200, description = "Successfully fetched libraries", body = inline(Vec<EncodableLibrary>)),
         (status = 500, description = "Internal server error")
     )
 )]
@@ -60,7 +61,7 @@ pub struct NewLibraryRequest {
     tag = "library",
     request_body = NewLibraryRequest,
     responses(
-        (status = 200, description = "Successfully created library", body = EncodableLibrary),
+        (status = 200, description = "Successfully created library", body = inline(EncodableLibrary)),
         (status = 400, description = "Invalid request body"),
         (status = 500, description = "Internal server error")
     )
@@ -120,7 +121,7 @@ async fn get_library(Path(_library_id): Path<i32>, State(_app): State<AppState>)
         ("id" = i32, Path, description = "Id of the library")
     ),
     responses(
-        (status = 200, description = "Successfully fetched library media"),
+        (status = 200, description = "Successfully fetched library media", body = inline(EncodableMedia)),
         (status = 404, description = "Library not found"),
         (status = 500, description = "Internal server error")
     )

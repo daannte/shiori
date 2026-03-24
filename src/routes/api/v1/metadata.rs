@@ -21,7 +21,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
     params(ListQueryParams),
     tag = "metadata",
     responses(
-        (status = 200, description = "Successfully found metadata", body = EncodableMetadataSearch),
+        (status = 200, description = "Successfully found metadata", body = inline(EncodableMetadataSearch)),
         (status = 400, description = "Invalid query parameters"),
         (status = 500, description = "Internal server error")
     )

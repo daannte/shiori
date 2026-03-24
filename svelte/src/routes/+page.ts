@@ -1,17 +1,29 @@
+import { createClient, type operations } from "@shiori/api-client";
 import type { PageLoad } from "./$types";
+import { error } from "@sveltejs/kit";
+
+type LibrariesResponse = operations["list_libraries"]["responses"]["200"]["content"]["application/json"]
 
 export const load: PageLoad = async ({ fetch }) => {
-  try {
-    const res = await fetch('/api/v1/libraries')
+  let client = createClient({ fetch })
 
-    if (!res.ok) {
-      throw new Error(`HTTP error: ${res.status}`)
-    }
+  let libraries = await loadLibraries(client)
 
-    const data = await res.json()
-    return { libraries: data }
-  } catch (err) {
-    console.error(err);
-    return { error: "Unable to fetch libraries" };
-  }
+  return { libraries }
 };
+
+function loadLibrariesError(status: number): never {
+  error(status, { message: "Failed to load libraries", tryAgain: true })
+}
+
+async function loadLibraries(client: ReturnType<typeof createClient>): Promise<LibrariesResponse> {
+  let res = await client.GET("/api/v1/libraries").catch(() => {
+    loadLibrariesError(504)
+  })
+
+  if (res.error || !res.data) {
+    loadLibrariesError(res.response.status)
+  }
+
+  return res.data
+}

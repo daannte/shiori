@@ -24,7 +24,37 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Library"
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "name",
+                      "path",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp of when the media was created.",
+                        "example": "2024-11-08T17:23:41Z"
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier for the library.",
+                        "example": 86
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the library.",
+                        "example": "Light Novels"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "File system path to the library's directory.",
+                        "example": "/data/books/light_novels"
+                      }
+                    }
                   }
                 }
               }
@@ -57,7 +87,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Library"
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "path",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the media was created.",
+                      "example": "2024-11-08T17:23:41Z"
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the library.",
+                      "example": 86
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the library.",
+                      "example": "Light Novels"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "File system path to the library's directory.",
+                      "example": "/data/books/light_novels"
+                    }
+                  }
                 }
               }
             }
@@ -124,7 +184,63 @@
         ],
         "responses": {
           "200": {
-            "description": "Successfully fetched library media"
+            "description": "Successfully fetched library media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "size",
+                    "path",
+                    "extension",
+                    "created_at",
+                    "library_id"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the media was created.",
+                      "example": "2026-03-23T12:00:00Z"
+                    },
+                    "extension": {
+                      "type": "string",
+                      "description": "File extension of the media.",
+                      "example": "epub"
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the media item.",
+                      "example": 86
+                    },
+                    "library_id": {
+                      "type": "string",
+                      "description": "Name of the library this media belongs to.",
+                      "example": "Light Novels"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the media file, excluding extension.",
+                      "example": "86_Volume_1"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "File system path where the media is stored.",
+                      "example": "/data/books/light_novels/86_Volume_1.epub"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64",
+                      "description": "Size of the media file in bytes.",
+                      "example": "102400"
+                    }
+                  }
+                }
+              }
+            }
           },
           "404": {
             "description": "Library not found"
@@ -198,7 +314,55 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EncodableMetadataSearch"
+                  "type": "object",
+                  "required": [
+                    "authors"
+                  ],
+                  "properties": {
+                    "authors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of authors associated with the media item.",
+                      "example": [
+                        "Asato Asato"
+                      ]
+                    },
+                    "isbn": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+                      "example": "1975303121"
+                    },
+                    "language": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Language of the media content.",
+                      "example": "English"
+                    },
+                    "published_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date",
+                      "description": "Date the media was published.",
+                      "example": "2019-03-26"
+                    },
+                    "publisher": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Name of the publisher or publishing organization.",
+                      "example": "Yen On"
+                    }
+                  }
                 }
               }
             }
@@ -215,90 +379,6 @@
   },
   "components": {
     "schemas": {
-      "EncodableMetadataSearch": {
-        "type": "object",
-        "required": [
-          "authors"
-        ],
-        "properties": {
-          "authors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of authors associated with the media item.",
-            "example": [
-              "Asato Asato"
-            ]
-          },
-          "isbn": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
-            "example": "1975303121"
-          },
-          "language": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Language of the media content.",
-            "example": "English"
-          },
-          "published_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date",
-            "description": "Date the media was published.",
-            "example": "2019-03-26"
-          },
-          "publisher": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Name of the publisher or publishing organization.",
-            "example": "Yen On"
-          }
-        }
-      },
-      "Library": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "path",
-          "created_at"
-        ],
-        "properties": {
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp of when the media was created.",
-            "example": "2024-11-08T17:23:41Z"
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Unique identifier for the library.",
-            "example": 86
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the library.",
-            "example": "Light Novels"
-          },
-          "path": {
-            "type": "string",
-            "description": "File system path to the library's directory.",
-            "example": "/data/books/light_novels"
-          }
-        }
-      },
       "NewLibraryRequest": {
         "type": "object",
         "required": [

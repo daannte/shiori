@@ -13,7 +13,7 @@
 	{#if data.libraries}
 		{#each data.libraries as library (library.id)}
 			<div class="rounded-2xl bg-secondary p-4">
-				<a href={`/libraries/${library.id}`}>
+				<a href={`/libraries/${library.id}/media`}>
 					<h3>{library.name}</h3>
 					<p>Path: {library.path}</p>
 				</a>
