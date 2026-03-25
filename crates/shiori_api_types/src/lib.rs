@@ -24,6 +24,10 @@ pub struct EncodableMetadataSearch {
     /// Date the media was published.
     #[schema(example = "2019-03-26")]
     pub published_at: Option<NaiveDate>,
+
+    /// URL of the thumbnail image associated with the media.
+    #[schema(example = "https://example.com/thumbnail.jpg")]
+    pub thumbnail_url: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
