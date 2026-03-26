@@ -10,7 +10,7 @@
         "concurrently": "^9.2.1",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "^5.9.3",
       },
     },
     "packages/shiori-api-client": {
