@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{Router, extract::DefaultBodyLimit};
 use utoipa_redoc::{Redoc, Servable};
 
 use crate::{config::state::AppState, routes::openapi::BaseOpenApi};
@@ -13,5 +13,6 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
 
     router
         .merge(Redoc::with_url("/docs", openapi))
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 1024)) // 1GiB
         .with_state(state)
 }

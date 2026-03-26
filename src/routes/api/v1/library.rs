@@ -1,3 +1,4 @@
+use shiori_filesystem::media::epub::Epub;
 use std::ffi::OsStr;
 use std::path;
 use tokio::fs;
@@ -49,7 +50,7 @@ async fn list_libraries(State(app): State<AppState>) -> APIResult<Json<Vec<Encod
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]
-pub struct NewLibraryRequest {
+struct NewLibraryRequest {
     /// Name of the library.
     pub name: String,
     /// File system path to the library's directory.
@@ -196,8 +197,9 @@ async fn create_library_media(
     State(app): State<AppState>,
     TypedMultipart(body): TypedMultipart<NewMediaRequest>,
 ) -> APIResult<Json<Vec<EncodableMedia>>> {
-    // TODO: Refactor this func
-    // TODO: Keep running even if some files fail
+    // TODO:
+    // - Refactor this func
+    // - Keep running even if some files fail
     let mut conn = app.db().await?;
 
     let mut uploaded: Vec<EncodableMedia> = Vec::new();
@@ -213,10 +215,7 @@ async fn create_library_media(
 
         let path = path::Path::new(file_name);
 
-        let file_stem = path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or(file_name);
+        let file_stem = path.file_stem().and_then(|s| s.to_str()).unwrap();
 
         let ext = path
             .extension()
@@ -231,6 +230,8 @@ async fn create_library_media(
                 "Media already exists in library".to_string(),
             ));
         }
+
+        let cover_path = Epub::get_cover_path(file_stem, f.contents.path());
 
         let new_media = NewMedia {
             name: file_stem,
@@ -248,6 +249,7 @@ async fn create_library_media(
             path: &media_path.to_string_lossy().to_string(),
             extension: &ext,
             library_id,
+            cover_path: cover_path.as_deref(),
         };
 
         let media = new_media.insert(&mut conn).await?;

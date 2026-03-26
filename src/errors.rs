@@ -18,6 +18,8 @@ pub enum APIError {
     #[error("{0}")]
     BadRequest(String),
     #[error("{0}")]
+    NotFound(String),
+    #[error("{0}")]
     DbError(#[from] diesel::result::Error),
 }
 
@@ -27,6 +29,7 @@ impl APIError {
             APIError::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             APIError::NotImplemented => StatusCode::NOT_IMPLEMENTED,
             APIError::BadRequest(_) => StatusCode::BAD_REQUEST,
+            APIError::NotFound(_) => StatusCode::NOT_FOUND,
             APIError::DbError(diesel::result::Error::NotFound) => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }

@@ -26,9 +26,15 @@ pub struct Media {
     /// Foreign key reference to the `libraries` table,
     /// indicating the library to which this media belongs.
     pub library_id: i32,
+    /// File system path where the cover is stored.
+    pub cover_path: Option<String>,
 }
 
 impl Media {
+    pub async fn find(conn: &mut AsyncPgConnection, id: i32) -> QueryResult<Media> {
+        Media::query().find(id).first(conn).await
+    }
+
     pub async fn find_by_library_id(
         conn: &mut AsyncPgConnection,
         library_id: i32,
@@ -50,6 +56,7 @@ pub struct NewMedia<'a> {
     pub path: &'a str,
     pub extension: &'a str,
     pub library_id: i32,
+    pub cover_path: Option<&'a str>,
 }
 
 impl NewMedia<'_> {

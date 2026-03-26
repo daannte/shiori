@@ -201,6 +201,14 @@
                       "library_id"
                     ],
                     "properties": {
+                      "cover_path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "File system path where the cover is stored.",
+                        "example": "/data/covers/86_Volume_1.png"
+                      },
                       "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -301,6 +309,14 @@
                       "library_id"
                     ],
                     "properties": {
+                      "cover_path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "File system path where the cover is stored.",
+                        "example": "/data/covers/86_Volume_1.png"
+                      },
                       "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -358,6 +374,38 @@
         }
       }
     },
+    "/api/v1/media/{id}/cover": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Fetch media cover.",
+        "operationId": "get_media_cover",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched media cover"
+          },
+          "404": {
+            "description": "Media or cover not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/v1/metadata/search": {
       "get": {
         "tags": [
@@ -405,6 +453,14 @@
                       "example": [
                         "Asato Asato"
                       ]
+                    },
+                    "cover_url": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "URL of the cover image associated with the media.",
+                      "example": "https://example.com/cover.jpg"
                     },
                     "isbn": {
                       "type": [

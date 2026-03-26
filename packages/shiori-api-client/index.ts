@@ -3,8 +3,9 @@ import createOpenAPIClient, { type ClientOptions } from 'openapi-fetch';
 import type { components, operations, paths } from './schema';
 export type { components, operations, paths };
 
+const baseUrl = import.meta.env.PROD ? window.location.origin : "http://localhost:3000"
+
 export function createClient(options?: ClientOptions) {
-  let baseUrl = import.meta.env.PROD ? window.location.origin : "http://localhost:3000"
 
   const mergedOptions = {
     baseUrl,
@@ -13,3 +14,8 @@ export function createClient(options?: ClientOptions) {
 
   return createOpenAPIClient<paths>(mergedOptions)
 }
+
+export function get_cover_url(id: number): string {
+  return `${baseUrl}/api/v1/media/${id}/cover`
+}
+

@@ -37,6 +37,7 @@ impl MetadataProvider for GoodreadsProvider {
                 .iter()
                 .map(|s| s.to_string())
                 .collect(),
+            cover_url: book_info.get("imageUrl").map(|s| s.to_string()),
             ..Default::default()
         };
 

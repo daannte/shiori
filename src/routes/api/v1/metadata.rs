@@ -26,7 +26,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
         (status = 500, description = "Internal server error")
     )
 )]
-pub async fn search_metadata(
+async fn search_metadata(
     Query(params): Query<ListQueryParams>,
 ) -> APIResult<Json<EncodableMetadataSearch>> {
     let metadata = match params.provider.as_str() {
@@ -38,7 +38,7 @@ pub async fn search_metadata(
 
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-pub struct ListQueryParams {
+struct ListQueryParams {
     /// A search query string.
     #[serde(rename = "q")]
     q_string: String,

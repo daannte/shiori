@@ -1,0 +1,2 @@
+ALTER TABLE media
+ADD COLUMN cover_path TEXT
