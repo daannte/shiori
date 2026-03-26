@@ -1,9 +1,6 @@
 use std::path;
 
-use axum::{
-    Json,
-    extract::{Path, State},
-};
+use axum::extract::{Path, State};
 use shiori_database::models::Media;
 use shiori_filesystem::common::get_cover;
 use utoipa_axum::{router::OpenApiRouter, routes};

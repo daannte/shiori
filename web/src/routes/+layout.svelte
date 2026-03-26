@@ -11,9 +11,12 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <Sidebar.Provider>
-	<AppSidebar {data} />
-	<main>
-		<Sidebar.Trigger />
-		{@render children()}
-	</main>
+	<div class="flex h-full flex-1">
+		<AppSidebar {data} />
+		<main class="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+			<div class="flex flex-1 flex-col">
+				{@render children()}
+			</div>
+		</main>
+	</div>
 </Sidebar.Provider>
