@@ -2,19 +2,34 @@
 	import * as Empty from '$lib/components/ui/empty';
 
 	import BookText from '@lucide/svelte/icons/book-text';
+	import { get_cover_url } from '@shiori/api-client';
 
 	let { data } = $props();
 </script>
 
-<div class="min-h-screen p-6">
+<div class="flex p-6">
 	{#if data.media.length > 0}
-		{#each data.media as media (media.id)}
-			<div class="m-2 rounded-2xl bg-secondary p-4">
-				<a href="#top">
-					<h3>{media.name}</h3>
+		<div
+			class="grid w-full grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+		>
+			{#each data.media as media (media.id)}
+				<a href="#top" class="group overflow-hidden rounded-2xl bg-secondary p-2">
+					<div class="aspect-2/3 w-full overflow-hidden">
+						<img
+							class="h-full w-full rounded-xl object-cover"
+							src={get_cover_url(media.id)}
+							alt={`${media.name} cover image`}
+						/>
+					</div>
+
+					<div class="p-2">
+						<h3 class="text-lg font-medium">
+							{media.name}
+						</h3>
+					</div>
 				</a>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	{:else}
 		<Empty.Root class="min-h-screen">
 			<Empty.Header>

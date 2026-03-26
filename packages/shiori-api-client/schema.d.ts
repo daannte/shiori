@@ -57,6 +57,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/media/{id}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch media cover. */
+        get: operations["get_media_cover"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/metadata/search": {
         parameters: {
             query?: never;
@@ -263,6 +280,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         /**
+                         * @description File system path where the cover is stored.
+                         * @example /data/covers/86_Volume_1.png
+                         */
+                        cover_path?: string | null;
+                        /**
                          * Format: date-time
                          * @description Timestamp of when the media was created.
                          * @example 2026-03-23T12:00:00Z
@@ -344,6 +366,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         /**
+                         * @description File system path where the cover is stored.
+                         * @example /data/covers/86_Volume_1.png
+                         */
+                        cover_path?: string | null;
+                        /**
                          * Format: date-time
                          * @description Timestamp of when the media was created.
                          * @example 2026-03-23T12:00:00Z
@@ -408,6 +435,41 @@ export interface operations {
             };
         };
     };
+    get_media_cover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id of the media item */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully fetched media cover */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Media or cover not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     search_metadata: {
         parameters: {
             query: {
@@ -439,6 +501,11 @@ export interface operations {
                          *     ]
                          */
                         authors: string[];
+                        /**
+                         * @description URL of the cover image associated with the media.
+                         * @example https://example.com/cover.jpg
+                         */
+                        cover_url?: string | null;
                         /**
                          * @description International Standard Book Number (ISBN).
                          *     Typically used for books.
