@@ -50,7 +50,7 @@ async fn list_libraries(State(app): State<AppState>) -> APIResult<Json<Vec<Encod
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]
-pub struct NewLibraryRequest {
+struct NewLibraryRequest {
     /// Name of the library.
     pub name: String,
     /// File system path to the library's directory.

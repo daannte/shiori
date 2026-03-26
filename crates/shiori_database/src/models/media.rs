@@ -31,6 +31,10 @@ pub struct Media {
 }
 
 impl Media {
+    pub async fn find(conn: &mut AsyncPgConnection, id: i32) -> QueryResult<Media> {
+        Media::query().find(id).first(conn).await
+    }
+
     pub async fn find_by_library_id(
         conn: &mut AsyncPgConnection,
         library_id: i32,
