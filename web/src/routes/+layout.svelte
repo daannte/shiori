@@ -2,8 +2,18 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 
-	let { children } = $props();
+	import * as Sidebar from '$lib/components/ui/sidebar';
+	import AppSidebar from '$lib/components/app-sidebar.svelte';
+
+	let { data, children } = $props();
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+
+<Sidebar.Provider>
+	<AppSidebar {data} />
+	<main>
+		<Sidebar.Trigger />
+		{@render children()}
+	</main>
+</Sidebar.Provider>
