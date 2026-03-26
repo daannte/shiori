@@ -13,7 +13,7 @@
 			class="grid w-full grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
 		>
 			{#each data.media as media (media.id)}
-				<a href="#top" class="group overflow-hidden rounded-2xl bg-secondary p-2">
+				<a href={`/media/${media.id}`} class="group overflow-hidden rounded-2xl bg-secondary p-2">
 					<div class="aspect-2/3 w-full overflow-hidden">
 						<img
 							class="h-full w-full rounded-xl object-cover"
