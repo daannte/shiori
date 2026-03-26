@@ -5,11 +5,13 @@
 	import * as Collapsible from '$lib/components/ui/collapsible';
 
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
+	import House from '@lucide/svelte/icons/house';
+	import BookText from '@lucide/svelte/icons/book-text';
 
 	let { data } = $props();
 
-	function isActive(library_id: number): boolean {
-		return page.url.pathname === `/libraries/${library_id}/media`;
+	function isActive(path: string): boolean {
+		return page.url.pathname === path;
 	}
 </script>
 
@@ -17,12 +19,35 @@
 	<Sidebar.Header />
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>Libraries</Sidebar.GroupLabel>
+			<Sidebar.Menu class="gap-2">
+				<Sidebar.MenuItem>
+					<Sidebar.MenuButton isActive={isActive('/')}>
+						{#snippet child({ props })}
+							<a href="/" {...props}>
+								<House />
+								<span>Home</span>
+							</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+				<Sidebar.MenuItem>
+					<Sidebar.MenuButton isActive={isActive('/media')}>
+						{#snippet child({ props })}
+							<a href="/media" {...props}>
+								<BookText />
+								<span>Explore</span>
+							</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+			</Sidebar.Menu>
+		</Sidebar.Group>
+		<Sidebar.Group>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					<Collapsible.Root open class="group/collapsible">
 						<Sidebar.MenuItem>
-							<Collapsible.Trigger>
+							<Collapsible.Trigger class="font-medium">
 								{#snippet child({ props })}
 									<Sidebar.MenuButton {...props}>
 										Libraries
@@ -36,7 +61,7 @@
 								<Sidebar.MenuSub>
 									{#each data.libraries as library (library.id)}
 										<Sidebar.MenuSubItem>
-											<Sidebar.MenuSubButton isActive={isActive(library.id)}>
+											<Sidebar.MenuSubButton isActive={isActive(`/libraries/${library.id}/media`)}>
 												{#snippet child({ props })}
 													<a href={`/libraries/${library.id}/media`} {...props}>
 														{library.name}

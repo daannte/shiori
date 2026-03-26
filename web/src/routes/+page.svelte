@@ -10,7 +10,7 @@
 <Empty.Root class="min-h-screen">
 	<Empty.Header>
 		<Empty.Media>
-			<Folders size={40} />
+			<Folders class="text-muted-foreground" size={40} />
 		</Empty.Media>
 		<Empty.Title class="text-2xl md:text-3xl">No libraries yet</Empty.Title>
 		<Empty.Description class="sm:text-lg">
