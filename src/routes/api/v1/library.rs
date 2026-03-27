@@ -119,7 +119,7 @@ async fn create_library(
     Ok(Json(library.into()))
 }
 
-/// Fetch library by id.
+/// Fetch library.
 ///
 /// Not implemented
 #[utoipa::path(

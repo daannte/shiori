@@ -24,7 +24,7 @@ use crate::{
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_media_cover))
-        .routes(routes!(patch_media))
+        .routes(routes!(get_media, patch_media))
 }
 
 /// Fetch media cover.
@@ -58,6 +58,36 @@ async fn get_media_cover(
         .map_err(|_| APIError::InternalServerError("Failed to get cover".to_string()))?;
 
     Ok(data)
+}
+
+/// Fetch media item.
+#[utoipa::path(
+    get,
+    path = "/media/{id}",
+    tag = "media",
+    params(
+        ("id" = i32, Path, description = "Id of the media item")
+    ),
+    responses(
+        (status = 200, description = "Successfully fetched media cover", body = inline(EncodableMediaWithMetadata)),
+        (status = 404, description = "Media not found"),
+        (status = 500, description = "Internal server error")
+    )
+)]
+async fn get_media(
+    Path(media_id): Path<i32>,
+    State(app): State<AppState>,
+) -> APIResult<Json<EncodableMediaWithMetadata>> {
+    let mut conn = app.db().await?;
+
+    let (media, metadata) = Media::with_metadata(&mut conn, media_id).await?;
+
+    let res = EncodableMediaWithMetadata {
+        media: media.into(),
+        metadata: metadata.map(|m| m.into()),
+    };
+
+    Ok(Json(res))
 }
 
 #[derive(Default, Deserialize, utoipa::ToSchema)]

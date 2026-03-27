@@ -2,7 +2,10 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-use crate::{models::Library, schema::media};
+use crate::{
+    models::{Library, MediaMetadata},
+    schema::{media, media_metadata},
+};
 use serde::Serialize;
 
 /// The model representing a row in the `media` database table.
@@ -42,6 +45,18 @@ impl Media {
         Media::query()
             .filter(media::library_id.eq(library_id))
             .load(conn)
+            .await
+    }
+
+    pub async fn with_metadata(
+        conn: &mut AsyncPgConnection,
+        id: i32,
+    ) -> QueryResult<(Media, Option<MediaMetadata>)> {
+        media::table
+            .left_join(media_metadata::table)
+            .filter(media::id.eq(id))
+            .select((Media::as_select(), Option::<MediaMetadata>::as_select()))
+            .first::<(Media, Option<MediaMetadata>)>(conn)
             .await
     }
 }
