@@ -6,7 +6,7 @@ use axum::{
 };
 use chrono::NaiveDate;
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
 use serde::Deserialize;
 use shiori_database::{
     models::{Media, UpdateMediaMetadata},
@@ -115,33 +115,41 @@ async fn patch_media(
 ) -> APIResult<Vec<u8>> {
     let mut conn = app.db().await?;
 
-    println!("{body:#?}");
-    let m = Media::find(&mut conn, media_id).await?;
-
-    if let Some(cover_url) = body.cover_url {
-        let cover_path = download_cover(&cover_url)
-            .await
-            .map_err(|_| APIError::InternalServerError("Failed to download cover".to_string()))?;
-
-        let updated_media = diesel::update(&m)
-            .set(media::cover_path.eq(cover_path))
-            .get_result::<Media>(&mut conn)
-            .await?;
-        println!("{updated_media:#?}");
-    }
-
-    if let Some(metadata) = body.metadata {
-        let changes = UpdateMediaMetadata {
-            authors: metadata.authors,
-            publisher: metadata.publisher,
-            isbn: metadata.isbn,
-            language: metadata.language,
-            published_at: metadata.published_at,
+    let downloaded_cover =
+        if let Some(cover_url) = &body.cover_url {
+            Some(download_cover(cover_url).await.map_err(|_| {
+                APIError::InternalServerError("Failed to download cover".to_string())
+            })?)
+        } else {
+            None
         };
 
-        let updated = changes.upsert(&mut conn, m.id).await?;
-        println!("{updated:#?}");
-    }
+    conn.transaction(|conn| {
+        async move {
+            let m = Media::find(conn, media_id).await?;
 
-    Ok(Vec::new())
+            if let Some(cover_path) = downloaded_cover {
+                diesel::update(&m)
+                    .set(media::cover_path.eq(cover_path))
+                    .get_result::<Media>(conn)
+                    .await?;
+            }
+
+            if let Some(metadata) = &body.metadata {
+                let changes = UpdateMediaMetadata {
+                    authors: metadata.authors.clone(),
+                    publisher: metadata.publisher.clone(),
+                    isbn: metadata.isbn.clone(),
+                    language: metadata.language.clone(),
+                    published_at: metadata.published_at,
+                };
+
+                changes.upsert(conn, m.id).await?;
+            }
+
+            Ok(Vec::new())
+        }
+        .scope_boxed()
+    })
+    .await
 }

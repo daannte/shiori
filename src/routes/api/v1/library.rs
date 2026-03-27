@@ -171,7 +171,7 @@ async fn list_library_media(
 #[derive(TryFromMultipart, ToSchema)]
 struct NewMediaRequest {
     /// An array of files to upload.
-    #[schema(value_type = Vec<Object>)]
+    #[schema(format = Binary, value_type = Vec<u8>)]
     files: Vec<FieldData<NamedTempFile>>,
 }
 
