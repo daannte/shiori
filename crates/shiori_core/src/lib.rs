@@ -8,6 +8,7 @@ pub struct ShioriCore {
 }
 
 impl ShioriCore {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> ShioriCore {
         ShioriCore { app: App::new() }
     }

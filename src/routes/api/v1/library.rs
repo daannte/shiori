@@ -111,7 +111,7 @@ async fn create_library(
         path: &body.path,
     };
 
-    let library = new_library.insert(&mut conn).await?;
+    let library = new_library.insert(&conn).await?;
 
     // TODO: Make this atomic with the db insert? (if possible)
     fs::create_dir_all(body.path).await?;
@@ -248,7 +248,7 @@ async fn create_library_media(
                     println!("Failed to convert to i64");
                     0
                 }),
-            path: &media_path.to_string_lossy().to_string(),
+            path: &media_path.to_string_lossy(),
             extension: &ext,
             library_id,
             cover_path: cover_path.as_deref(),

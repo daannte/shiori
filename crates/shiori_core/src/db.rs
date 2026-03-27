@@ -12,7 +12,5 @@ pub fn create_pool() -> Pool<AsyncPgConnection> {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = AsyncDieselConnectionManager::new(db_url);
 
-    let pool = Pool::builder(manager).build().unwrap();
-
-    pool
+    Pool::builder(manager).build().unwrap()
 }
