@@ -8,6 +8,7 @@ use chrono::NaiveDate;
 use diesel::prelude::*;
 use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
 use serde::Deserialize;
+use shiori_api_types::{EncodableMediaWithMetadata, EncodableMetadata};
 use shiori_database::{
     models::{Media, UpdateMediaMetadata},
     schema::media,
@@ -59,7 +60,7 @@ async fn get_media_cover(
     Ok(data)
 }
 
-#[derive(Debug, Default, Deserialize, utoipa::ToSchema)]
+#[derive(Default, Deserialize, utoipa::ToSchema)]
 pub struct PatchMetadata {
     /// List of authors associated with the media item.
     #[schema(examples(json!(["Asato Asato"])))]
@@ -83,7 +84,18 @@ pub struct PatchMetadata {
     pub published_at: Option<NaiveDate>,
 }
 
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
+// I don't like this but its whatever
+impl PatchMetadata {
+    pub fn is_empty(&self) -> bool {
+        self.authors.is_none()
+            && self.publisher.is_none()
+            && self.isbn.is_none()
+            && self.language.is_none()
+            && self.published_at.is_none()
+    }
+}
+
+#[derive(Deserialize, utoipa::ToSchema)]
 pub struct PatchRequest {
     /// URL of the cover image associated with the media.
     #[schema(examples("https://example.com/cover.jpg"))]
@@ -103,7 +115,7 @@ pub struct PatchRequest {
     ),
     request_body = inline(PatchRequest),
     responses(
-        (status = 200, description = "Successfully updated media information"),
+        (status = 200, description = "Successfully updated media information", body = inline(EncodableMediaWithMetadata)),
         (status = 404, description = "Media not found"),
         (status = 500, description = "Internal server error")
     )
@@ -112,7 +124,7 @@ async fn patch_media(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
     Json(body): Json<PatchRequest>,
-) -> APIResult<Vec<u8>> {
+) -> APIResult<Json<EncodableMediaWithMetadata>> {
     let mut conn = app.db().await?;
 
     let downloaded_cover =
@@ -126,28 +138,39 @@ async fn patch_media(
 
     conn.transaction(|conn| {
         async move {
-            let m = Media::find(conn, media_id).await?;
+            let mut m = Media::find(conn, media_id).await?;
 
             if let Some(cover_path) = downloaded_cover {
-                diesel::update(&m)
+                m = diesel::update(&m)
                     .set(media::cover_path.eq(cover_path))
                     .get_result::<Media>(conn)
                     .await?;
             }
 
-            if let Some(metadata) = &body.metadata {
-                let changes = UpdateMediaMetadata {
-                    authors: metadata.authors.clone(),
-                    publisher: metadata.publisher.clone(),
-                    isbn: metadata.isbn.clone(),
-                    language: metadata.language.clone(),
-                    published_at: metadata.published_at,
-                };
+            let metadata = if let Some(metadata) = &body.metadata {
+                if metadata.is_empty() {
+                    None
+                } else {
+                    let changes = UpdateMediaMetadata {
+                        authors: metadata.authors.clone(),
+                        publisher: metadata.publisher.clone(),
+                        isbn: metadata.isbn.clone(),
+                        language: metadata.language.clone(),
+                        published_at: metadata.published_at,
+                    };
 
-                changes.upsert(conn, m.id).await?;
-            }
+                    Some(changes.upsert(conn, m.id).await?)
+                }
+            } else {
+                None
+            };
 
-            Ok(Vec::new())
+            let res = EncodableMediaWithMetadata {
+                media: m.into(),
+                metadata: metadata.map(EncodableMetadata::from),
+            };
+
+            Ok(Json(res))
         }
         .scope_boxed()
     })
