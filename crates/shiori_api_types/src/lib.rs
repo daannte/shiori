@@ -64,8 +64,8 @@ pub struct EncodableMedia {
     #[schema(example = 2)]
     pub library_id: i32,
 
-    /// File system path where the cover is stored.
-    #[schema(example = "/data/covers/86_Volume_1.png")]
+    /// Endpoint where the cover is stored.
+    #[schema(example = "/api/v1/media/4/cover")]
     pub cover_path: Option<String>,
 }
 
@@ -81,7 +81,7 @@ impl From<Media> for EncodableMedia {
             library_id: media.library_id,
             cover_path: media
                 .cover_path
-                .map(|_| format!("/api/v1/{}/cover", media.id)),
+                .map(|_| format!("/api/v1/media/{}/cover", media.id)),
         }
     }
 }

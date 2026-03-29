@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as Empty from '$lib/components/ui/empty';
 	import { Button } from '$lib/components/ui/button';
 
@@ -16,6 +17,6 @@
 		</Empty.Description>
 	</Empty.Header>
 	<Empty.Content>
-		<Button size="lg" href="/libraries/create">Create Library</Button>
+		<Button size="lg" href={resolve('/libraries/create')}>Create Library</Button>
 	</Empty.Content>
 </Empty.Root>

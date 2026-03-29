@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import * as Collapsible from '$lib/components/ui/collapsible';
@@ -23,7 +24,7 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton isActive={isActive('/')}>
 						{#snippet child({ props })}
-							<a href="/" {...props}>
+							<a href={resolve('/')} {...props}>
 								<House />
 								<span>Home</span>
 							</a>
@@ -33,7 +34,7 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton isActive={isActive('/media')}>
 						{#snippet child({ props })}
-							<a href="/media" {...props}>
+							<a href={resolve('/media')} {...props}>
 								<BookText />
 								<span>Explore</span>
 							</a>
@@ -63,7 +64,12 @@
 										<Sidebar.MenuSubItem>
 											<Sidebar.MenuSubButton isActive={isActive(`/libraries/${library.id}/media`)}>
 												{#snippet child({ props })}
-													<a href={`/libraries/${library.id}/media`} {...props}>
+													<a
+														href={resolve('/libraries/[library_id]/media', {
+															library_id: library.id.toString()
+														})}
+														{...props}
+													>
 														{library.name}
 													</a>
 												{/snippet}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -39,6 +39,7 @@
   --sidebar-border: oklch(0.8434 0.0231 87.1621);
   --sidebar-ring: oklch(0.3012 0 0);
   --font-sans: "Montserrat", sans-serif;
+  --font-serif: "Lora", serif;
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -92,6 +93,7 @@
   --sidebar-border: oklch(0.2931 0 0);
   --sidebar-ring: oklch(0.8520 0.0205 100.6306);
   --font-sans: "Montserrat", sans-serif;
+  --font-serif: "Lora", serif;
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 6px;
@@ -144,6 +146,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

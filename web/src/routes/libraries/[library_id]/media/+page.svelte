@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { get_cover_url } from '@shiori/api-client';
 	import * as Empty from '$lib/components/ui/empty';
 
 	import BookText from '@lucide/svelte/icons/book-text';
-	import { get_cover_url } from '@shiori/api-client';
 
 	let { data } = $props();
 </script>
@@ -13,11 +14,14 @@
 			class="grid w-full grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
 		>
 			{#each data.media as media (media.id)}
-				<a href={`/media/${media.id}`} class="group overflow-hidden rounded-2xl bg-secondary p-2">
+				<a
+					href={resolve('/media/[media_id]', { media_id: media.id.toString() })}
+					class="group overflow-hidden rounded-2xl bg-secondary p-2"
+				>
 					<div class="aspect-2/3 w-full overflow-hidden">
 						<img
 							class="h-full w-full rounded-xl object-cover"
-							src={get_cover_url(media.id)}
+							src={get_cover_url(media.cover_path) ?? ''}
 							alt={`${media.name} cover image`}
 						/>
 					</div>

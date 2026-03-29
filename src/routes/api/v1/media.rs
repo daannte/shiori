@@ -130,6 +130,8 @@ impl PatchMetadata {
             && self.isbn.is_none()
             && self.language.is_none()
             && self.published_at.is_none()
+            && self.genres.is_none()
+            && self.description.is_none()
     }
 }
 
