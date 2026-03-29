@@ -4,8 +4,11 @@
 	import MetadataDialog from '$lib/components/metadata-dialog.svelte';
 
 	import Download from '@lucide/svelte/icons/download';
+	import Database from '@lucide/svelte/icons/database';
 
 	let { data } = $props();
+
+	let isMetadataOpen = $state(false);
 
 	let manualData = $state.raw<Record<string, any>>({});
 
@@ -40,7 +43,7 @@
 </script>
 
 <div class="flex h-screen flex-col xl:flex-row">
-	<div class="relative flex items-center justify-center p-4 md:flex-1 md:p-0">
+	<div class="flex items-center justify-center p-4 md:flex-1 md:p-0">
 		<img
 			class="aspect-2/3 max-h-[40vh] w-auto rounded-xl object-contain md:max-h-[60vh]"
 			src={get_cover_url(data.cover_path) ?? ''}
@@ -67,7 +70,9 @@
 		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
 
 		<div class="mt-4 flex gap-2">
-			<MetadataDialog bind:manualData />
+			<Button onclick={() => (isMetadataOpen = true)} size="icon" variant="outline"
+				><Database /></Button
+			>
 			<Button size="icon" variant="outline"><Download /></Button>
 		</div>
 
@@ -80,6 +85,8 @@
 		</div>
 	</div>
 </div>
+
+<MetadataDialog bind:manualData bind:isOpen={isMetadataOpen} />
 
 {#snippet metadata(key: string, value: string | string[] | null)}
 	<span class="text-sm font-medium sm:text-base">

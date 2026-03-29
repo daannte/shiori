@@ -1,14 +1,19 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-
-	import Database from '@lucide/svelte/icons/database';
-	import { Label } from './ui/label';
-	import { Input } from './ui/input';
-	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import client from '$lib/api';
 
-	let { manualData = $bindable() } = $props();
+	import * as Dialog from './ui/dialog';
+	import { Button } from './ui/button';
+	import { Label } from './ui/label';
+	import { Input } from './ui/input';
+
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+
+	interface Props {
+		manualData: any;
+		isOpen: boolean;
+	}
+
+	let { manualData = $bindable(), isOpen = $bindable() }: Props = $props();
 
 	let externalId = $state('');
 	let loading = $state(false);
@@ -33,15 +38,12 @@
 			error = 'Failed to fetch metadata';
 		} finally {
 			loading = false;
+			isOpen = false;
 		}
 	}
 </script>
 
-<Dialog.Root>
-	<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
-		<Database />
-	</Dialog.Trigger>
-
+<Dialog.Root bind:open={isOpen}>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>Fetch Metadata</Dialog.Title>
