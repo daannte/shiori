@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { get_cover_url } from '@shiori/api-client';
+	import { Button } from '$lib/components/ui/button';
+
+	import Database from '@lucide/svelte/icons/database';
+	import Download from '@lucide/svelte/icons/download';
 
 	let { data } = $props();
 
@@ -39,7 +43,12 @@
 
 		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
 
-		<div class="my-8 border-t-2"></div>
+		<div class="mt-4 flex gap-2">
+			<Button size="icon" variant="outline"><Database /></Button>
+			<Button size="icon" variant="outline"><Download /></Button>
+		</div>
+
+		<div class="my-4 border-t-2"></div>
 
 		<div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-[auto_1fr_auto_1fr] sm:gap-x-8">
 			{#each metadataArr as [label, value]}
