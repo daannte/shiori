@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { get_cover_url } from '@shiori/api-client';
 	import { Button } from '$lib/components/ui/button';
+	import MetadataDialog from '$lib/components/metadata-dialog.svelte';
 
-	import Database from '@lucide/svelte/icons/database';
 	import Download from '@lucide/svelte/icons/download';
 
 	let { data } = $props();
+
+	let manualData = $state.raw<Record<string, any>>({});
 
 	let metadataArr = $derived.by(() =>
 		data.metadata
@@ -14,6 +16,8 @@
 				)
 			: []
 	);
+
+	$inspect(manualData);
 </script>
 
 <div class="flex h-screen flex-col xl:flex-row">
@@ -44,7 +48,7 @@
 		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
 
 		<div class="mt-4 flex gap-2">
-			<Button size="icon" variant="outline"><Database /></Button>
+			<MetadataDialog bind:manualData />
 			<Button size="icon" variant="outline"><Download /></Button>
 		</div>
 

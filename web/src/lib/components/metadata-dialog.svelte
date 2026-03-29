@@ -1,0 +1,65 @@
+<script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+
+	import Database from '@lucide/svelte/icons/database';
+	import { Label } from './ui/label';
+	import { Input } from './ui/input';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+	import client from '$lib/api';
+
+	let { manualData = $bindable() } = $props();
+
+	let externalId = $state('');
+	let loading = $state(false);
+	let error = $state('');
+
+	async function search() {
+		error = '';
+		if (!externalId) {
+			error = 'Provide an ID';
+			return;
+		}
+
+		loading = true;
+		try {
+			let res = await client.GET('/api/v1/metadata/search', {
+				params: { query: { q: externalId } }
+			});
+			if (res.error) throw new Error('Failed to get metadata');
+			manualData = res.data;
+		} catch (e) {
+			console.error('Failed metadata: ', e);
+			error = 'Failed to fetch metadata';
+		} finally {
+			loading = false;
+		}
+	}
+</script>
+
+<Dialog.Root>
+	<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+		<Database />
+	</Dialog.Trigger>
+
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Fetch Metadata</Dialog.Title>
+			<Dialog.Description>Enter the external ID (Goodreads) to fetch metadata.</Dialog.Description>
+		</Dialog.Header>
+		<div class="mt-4 flex flex-col gap-4">
+			<div class="grid flex-1 gap-2">
+				<Label for="externalId" class="sr-only">External ID</Label>
+				<Input id="externalId" bind:value={externalId} placeholder="Enter Goodreads ID" />
+			</div>
+
+			<Button class="mt-2" onclick={search} disabled={loading}>
+				{#if loading}
+					<LoaderCircle class="animate-spin" />
+				{:else}
+					Search
+				{/if}
+			</Button>
+		</div>
+	</Dialog.Content>
+</Dialog.Root>
