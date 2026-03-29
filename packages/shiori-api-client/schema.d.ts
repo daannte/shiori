@@ -29,7 +29,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Fetch library by id. */
+        /**
+         * Fetch library.
+         * @description Not implemented
+         */
         get: operations["get_library"];
         put?: never;
         post?: never;
@@ -55,6 +58,24 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch media item. */
+        get: operations["get_media"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update media information. */
+        patch: operations["patch_media"];
         trace?: never;
     };
     "/api/v1/media/{id}/cover": {
@@ -95,15 +116,134 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        NewLibraryRequest: {
-            /** @description Name of the library. */
+        Media: {
+            /**
+             * @description Endpoint where the cover is stored.
+             * @example /api/v1/media/4/cover
+             */
+            cover_path?: string | null;
+            /**
+             * Format: date-time
+             * @description Timestamp of when the media was created.
+             * @example 2026-03-23T12:00:00Z
+             */
+            created_at: string;
+            /**
+             * @description File extension of the media.
+             * @example epub
+             */
+            extension: string;
+            /**
+             * Format: int32
+             * @description Unique identifier for the media item.
+             * @example 86
+             */
+            id: number;
+            /**
+             * Format: int32
+             * @description Library this media belongs to.
+             * @example 2
+             */
+            library_id: number;
+            /**
+             * @description Name of the media file, excluding extension.
+             * @example 86_Volume_1
+             */
             name: string;
-            /** @description File system path to the library's directory. */
+            /**
+             * @description File system path where the media is stored.
+             * @example /data/books/light_novels/86_Volume_1.epub
+             */
             path: string;
+            /**
+             * Format: int64
+             * @description Size of the media file in bytes.
+             * @example 102400
+             */
+            size: number;
         };
-        NewMediaRequest: {
-            /** @description An array of files to upload. */
-            files: Record<string, never>[];
+        MediaMetadata: {
+            /**
+             * @description List of authors associated with the media item.
+             * @example [
+             *       "Asato Asato"
+             *     ]
+             */
+            authors: string[];
+            /**
+             * @description Description of the media item.
+             * @example The San Magnolia Republic...
+             */
+            description?: string | null;
+            /**
+             * @description List of genres associated with the media item.
+             * @example [
+             *       "Light Novel",
+             *       "War"
+             *     ]
+             */
+            genres: string[];
+            /**
+             * @description International Standard Book Number (ISBN).
+             *     Typically used for books.
+             * @example 1975303121
+             */
+            isbn?: string | null;
+            /**
+             * @description Language of the media content.
+             * @example English
+             */
+            language?: string | null;
+            /**
+             * Format: date
+             * @description Date the media was published.
+             * @example 2019-03-26
+             */
+            published_at?: string | null;
+            /**
+             * @description Name of the publisher or publishing organization.
+             * @example Yen On
+             */
+            publisher?: string | null;
+        };
+        PatchMetadata: {
+            /** @description List of authors associated with the media item. */
+            authors?: string[] | null;
+            /**
+             * @description Description of the media item.
+             * @example The San Magnolia Republic...
+             */
+            description?: string | null;
+            /**
+             * @description List of genres associated with the media item.
+             * @example [
+             *       "Light Novel",
+             *       "War"
+             *     ]
+             */
+            genres?: string[] | null;
+            /**
+             * @description International Standard Book Number (ISBN).
+             *     Typically used for books.
+             * @example 1975303121
+             */
+            isbn?: string | null;
+            /**
+             * @description Language of the media content.
+             * @example English
+             */
+            language?: string | null;
+            /**
+             * Format: date
+             * @description Date the media was published.
+             * @example 2019-03-26
+             */
+            published_at?: string | null;
+            /**
+             * @description Name of the publisher or publishing organization.
+             * @example Yen On
+             */
+            publisher?: string | null;
         };
     };
     responses: never;
@@ -173,7 +313,12 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewLibraryRequest"];
+                "application/json": {
+                    /** @description Name of the library. */
+                    name: string;
+                    /** @description File system path to the library's directory. */
+                    path: string;
+                };
             };
         };
         responses: {
@@ -280,8 +425,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         /**
-                         * @description File system path where the cover is stored.
-                         * @example /data/covers/86_Volume_1.png
+                         * @description Endpoint where the cover is stored.
+                         * @example /api/v1/media/4/cover
                          */
                         cover_path?: string | null;
                         /**
@@ -354,7 +499,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["NewMediaRequest"];
+                "multipart/form-data": {
+                    /** @description An array of files to upload. */
+                    files: number[];
+                };
             };
         };
         responses: {
@@ -366,8 +514,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         /**
-                         * @description File system path where the cover is stored.
-                         * @example /data/covers/86_Volume_1.png
+                         * @description Endpoint where the cover is stored.
+                         * @example /api/v1/media/4/cover
                          */
                         cover_path?: string | null;
                         /**
@@ -420,6 +568,95 @@ export interface operations {
                 content?: never;
             };
             /** @description Library not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_media: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id of the media item */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully fetched media cover */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Media"] & {
+                        metadata?: null | components["schemas"]["MediaMetadata"];
+                    };
+                };
+            };
+            /** @description Media not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patch_media: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id of the media item */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description URL of the cover image associated with the media.
+                     * @example https://example.com/cover.jpg
+                     */
+                    cover_url?: string | null;
+                    metadata?: null | components["schemas"]["PatchMetadata"];
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully updated media information */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Media"] & {
+                        metadata?: null | components["schemas"]["MediaMetadata"];
+                    };
+                };
+            };
+            /** @description Media not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -506,6 +743,19 @@ export interface operations {
                          * @example https://example.com/cover.jpg
                          */
                         cover_url?: string | null;
+                        /**
+                         * @description Description of the media item.
+                         * @example The San Magnolia Republic...
+                         */
+                        description?: string | null;
+                        /**
+                         * @description List of genres associated with the media item.
+                         * @example [
+                         *       "Light Novel",
+                         *       "War"
+                         *     ]
+                         */
+                        genres: string[];
                         /**
                          * @description International Standard Book Number (ISBN).
                          *     Typically used for books.

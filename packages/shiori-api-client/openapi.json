@@ -75,7 +75,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewLibraryRequest"
+                "type": "object",
+                "required": [
+                  "name",
+                  "path"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the library."
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "File system path to the library's directory."
+                  }
+                }
               }
             }
           },
@@ -136,7 +150,8 @@
         "tags": [
           "library"
         ],
-        "summary": "Fetch library by id.",
+        "summary": "Fetch library.",
+        "description": "Not implemented",
         "operationId": "get_library",
         "parameters": [
           {
@@ -206,8 +221,8 @@
                           "string",
                           "null"
                         ],
-                        "description": "File system path where the cover is stored.",
-                        "example": "/data/covers/86_Volume_1.png"
+                        "description": "Endpoint where the cover is stored.",
+                        "example": "/api/v1/media/4/cover"
                       },
                       "created_at": {
                         "type": "string",
@@ -284,7 +299,21 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/NewMediaRequest"
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "binary",
+                      "minimum": 0
+                    },
+                    "description": "An array of files to upload."
+                  }
+                }
               }
             }
           },
@@ -314,8 +343,8 @@
                           "string",
                           "null"
                         ],
-                        "description": "File system path where the cover is stored.",
-                        "example": "/data/covers/86_Volume_1.png"
+                        "description": "Endpoint where the cover is stored.",
+                        "example": "/api/v1/media/4/cover"
                       },
                       "created_at": {
                         "type": "string",
@@ -367,6 +396,153 @@
           },
           "404": {
             "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Fetch media item.",
+        "operationId": "get_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched media cover",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Media"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "metadata": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Update media information.",
+        "operationId": "patch_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cover_url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "URL of the cover image associated with the media.",
+                    "examples": [
+                      "https://example.com/cover.jpg"
+                    ]
+                  },
+                  "metadata": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PatchMetadata",
+                        "description": "Optional metadata to update for the media item."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated media information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Media"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "metadata": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media not found"
           },
           "500": {
             "description": "Internal server error"
@@ -441,7 +617,8 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "authors"
+                    "authors",
+                    "genres"
                   ],
                   "properties": {
                     "authors": {
@@ -461,6 +638,25 @@
                       ],
                       "description": "URL of the cover image associated with the media.",
                       "example": "https://example.com/cover.jpg"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Description of the media item.",
+                      "example": "The San Magnolia Republic..."
+                    },
+                    "genres": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of genres associated with the media item.",
+                      "example": [
+                        "Light Novel",
+                        "War"
+                      ]
                     },
                     "isbn": {
                       "type": [
@@ -512,35 +708,218 @@
   },
   "components": {
     "schemas": {
-      "NewLibraryRequest": {
+      "Media": {
         "type": "object",
         "required": [
+          "id",
           "name",
-          "path"
+          "size",
+          "path",
+          "extension",
+          "created_at",
+          "library_id"
         ],
         "properties": {
+          "cover_path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Endpoint where the cover is stored.",
+            "example": "/api/v1/media/4/cover"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when the media was created.",
+            "example": "2026-03-23T12:00:00Z"
+          },
+          "extension": {
+            "type": "string",
+            "description": "File extension of the media.",
+            "example": "epub"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier for the media item.",
+            "example": 86
+          },
+          "library_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Library this media belongs to.",
+            "example": 2
+          },
           "name": {
             "type": "string",
-            "description": "Name of the library."
+            "description": "Name of the media file, excluding extension.",
+            "example": "86_Volume_1"
           },
           "path": {
             "type": "string",
-            "description": "File system path to the library's directory."
+            "description": "File system path where the media is stored.",
+            "example": "/data/books/light_novels/86_Volume_1.epub"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Size of the media file in bytes.",
+            "example": "102400"
           }
         }
       },
-      "NewMediaRequest": {
+      "MediaMetadata": {
         "type": "object",
         "required": [
-          "files"
+          "authors",
+          "genres"
         ],
         "properties": {
-          "files": {
+          "authors": {
             "type": "array",
             "items": {
-              "type": "object"
+              "type": "string"
             },
-            "description": "An array of files to upload."
+            "description": "List of authors associated with the media item.",
+            "example": [
+              "Asato Asato"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Description of the media item.",
+            "example": "The San Magnolia Republic..."
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of genres associated with the media item.",
+            "example": [
+              "Light Novel",
+              "War"
+            ]
+          },
+          "isbn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+            "example": "1975303121"
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of the media content.",
+            "example": "English"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Date the media was published.",
+            "example": "2019-03-26"
+          },
+          "publisher": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name of the publisher or publishing organization.",
+            "example": "Yen On"
+          }
+        }
+      },
+      "PatchMetadata": {
+        "type": "object",
+        "properties": {
+          "authors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "examples": [
+                [
+                  "Asato Asato"
+                ]
+              ]
+            },
+            "description": "List of authors associated with the media item."
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Description of the media item.",
+            "example": "The San Magnolia Republic..."
+          },
+          "genres": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "List of genres associated with the media item.",
+            "example": [
+              "Light Novel",
+              "War"
+            ]
+          },
+          "isbn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+            "examples": [
+              "1975303121"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of the media content.",
+            "examples": [
+              "English"
+            ]
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Date the media was published.",
+            "examples": [
+              "2019-03-26"
+            ]
+          },
+          "publisher": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name of the publisher or publishing organization.",
+            "examples": [
+              "Yen On"
+            ]
           }
         }
       }

@@ -15,8 +15,7 @@ export function createClient(options?: ClientOptions) {
   return createOpenAPIClient<paths>(mergedOptions)
 }
 
-export function get_cover_url(cover_endpoint: string | null): string {
-  if (!cover_endpoint) return ""
+export function get_cover_url(cover_endpoint: string): string {
   return `${baseUrl}${cover_endpoint}`
 }
 
