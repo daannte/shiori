@@ -34,9 +34,12 @@ impl MetadataProvider for GoodreadsProvider {
         let book_info =
             Self::book_info(apollo_state).ok_or_else(|| MetadataError::MissingBookInfo)?;
 
-        println!("{book_info:#?}");
-
         let mut metadata = EncodableMetadataSearch {
+            title: book_info
+                .get("title")
+                .and_then(Value::as_str)
+                .map(String::from)
+                .unwrap_or_default(),
             authors: Self::extract_author_names(apollo_state, book_info),
             cover_url: book_info
                 .get("imageUrl")

@@ -142,6 +142,10 @@ pub struct EncodableMediaWithMetadata {
 
 #[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EncodableMetadataSearch {
+    /// Title of the media item.
+    #[schema(example = "86—EIGHTY-SIX, Vol. 1")]
+    pub title: String,
+
     /// List of authors associated with the media item.
     #[schema(example = json!(["Asato Asato"]))]
     pub authors: Vec<String>,
