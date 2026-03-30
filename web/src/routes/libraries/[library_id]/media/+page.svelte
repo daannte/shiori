@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as Empty from '$lib/components/ui/empty';
 	import MediaCard from '$lib/components/media-card.svelte';
+	import EmptyView from '$lib/components/empty-view.svelte';
 
 	import BookText from '@lucide/svelte/icons/book-text';
 
@@ -17,17 +17,14 @@
 			{/each}
 		</div>
 	{:else}
-		<Empty.Root class="min-h-screen">
-			<Empty.Header>
-				<Empty.Media variant="icon">
-					<BookText />
-				</Empty.Media>
-				<Empty.Title>No media found</Empty.Title>
-				<Empty.Description>Click below to upload new media</Empty.Description>
-			</Empty.Header>
-			<Empty.Content>
+		<EmptyView
+			title="No media found"
+			description="Upload your favorite media to get started"
+			icon={BookText}
+		>
+			{#snippet content()}
 				<p>TODO add button to upload media</p>
-			</Empty.Content>
-		</Empty.Root>
+			{/snippet}
+		</EmptyView>
 	{/if}
 </div>
