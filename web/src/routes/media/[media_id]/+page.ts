@@ -4,7 +4,9 @@ import { error } from "@sveltejs/kit";
 
 type MediaResponse = operations["get_media"]["responses"]["200"]["content"]["application/json"]
 
-export const load: PageLoad = async ({ fetch, params }) => {
+export const load: PageLoad = async ({ fetch, params, depends }) => {
+  depends("media:page")
+
   let client = createClient({ fetch })
 
   const mediaId = parseInt(params.media_id)

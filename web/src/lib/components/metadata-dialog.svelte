@@ -1,5 +1,5 @@
 <script lang="ts">
-	import client from '$lib/api';
+	import { createClient, type operations } from '@shiori/api-client';
 
 	import * as Dialog from './ui/dialog';
 	import { Button } from './ui/button';
@@ -8,12 +8,17 @@
 
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 
+	type MetadataSearch =
+		operations['search_metadata']['responses']['200']['content']['application/json'];
+
 	interface Props {
-		manualData: any;
+		metadataSearch: MetadataSearch | undefined;
 		isOpen: boolean;
 	}
 
-	let { manualData = $bindable(), isOpen = $bindable() }: Props = $props();
+	let client = createClient({ fetch });
+
+	let { metadataSearch = $bindable(), isOpen = $bindable() }: Props = $props();
 
 	let externalId = $state('');
 	let loading = $state(false);
@@ -31,8 +36,8 @@
 			let res = await client.GET('/api/v1/metadata/search', {
 				params: { query: { q: externalId } }
 			});
-			if (res.error) throw new Error('Failed to get metadata');
-			manualData = res.data;
+			if (res.error || !res.data) throw new Error('Failed to get metadata');
+			metadataSearch = res.data;
 		} catch (e) {
 			console.error('Failed metadata: ', e);
 			error = 'Failed to fetch metadata';

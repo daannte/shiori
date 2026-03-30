@@ -1,16 +1,27 @@
 <script lang="ts">
-	import { get_cover_url } from '@shiori/api-client';
+	import {
+		createClient,
+		get_cover_url,
+		type components,
+		type operations
+	} from '@shiori/api-client';
 	import { Button } from '$lib/components/ui/button';
 	import MetadataDialog from '$lib/components/metadata-dialog.svelte';
 
 	import Download from '@lucide/svelte/icons/download';
 	import Database from '@lucide/svelte/icons/database';
+	import { invalidate } from '$app/navigation';
+
+	type PatchMetadata = components['schemas']['PatchMetadata'];
+	type MetadataSearch =
+		operations['search_metadata']['responses']['200']['content']['application/json'];
 
 	let { data } = $props();
 
+	let client = createClient({ fetch });
 	let isMetadataOpen = $state(false);
 
-	let manualData = $state.raw<Record<string, any>>({});
+	let metadataSearch = $state.raw<MetadataSearch | undefined>();
 
 	let metadataArr = $derived.by(() =>
 		data.metadata
@@ -39,7 +50,29 @@
 		return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 	}
 
-	$inspect(manualData);
+	async function saveMetadata() {
+		if (!metadataSearch) return;
+
+		let patch: PatchMetadata = {
+			...metadataSearch,
+			authors: metadataSearch.authors.length ? metadataSearch.authors : null,
+			genres: metadataSearch.genres.length ? metadataSearch.genres : null
+		};
+
+		try {
+			let res = await client.PATCH('/api/v1/media/{id}', {
+				params: { path: { id: data.id } },
+				body: { cover_url: metadataSearch.cover_url, metadata: patch }
+			});
+			if (!res.response.ok) throw new Error('Not good');
+			metadataSearch = undefined;
+			invalidate('media:page');
+		} catch (e) {
+			console.error('Failed to save metadata: ', e);
+		}
+	}
+
+	$inspect(metadataSearch);
 </script>
 
 <div class="flex h-screen flex-col xl:flex-row">
@@ -74,6 +107,9 @@
 				><Database /></Button
 			>
 			<Button size="icon" variant="outline"><Download /></Button>
+			{#if metadataSearch}
+				<Button onclick={saveMetadata}>Save</Button>
+			{/if}
 		</div>
 
 		<div class="my-4 border-t-2"></div>
@@ -86,7 +122,7 @@
 	</div>
 </div>
 
-<MetadataDialog bind:manualData bind:isOpen={isMetadataOpen} />
+<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} />
 
 {#snippet metadata(key: string, value: string | string[] | null)}
 	<span class="text-sm font-medium sm:text-base">
