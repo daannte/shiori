@@ -6,7 +6,9 @@ import { error } from "@sveltejs/kit";
 
 type LibrariesResponse = operations["list_libraries"]["responses"]["200"]["content"]["application/json"]
 
-export const load: LayoutLoad = async ({ fetch }) => {
+export const load: LayoutLoad = async ({ fetch, depends }) => {
+  depends("libraries:create")
+
   let client = createClient({ fetch })
 
   let libraries = await loadLibraries(client)

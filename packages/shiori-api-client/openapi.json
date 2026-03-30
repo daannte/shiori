@@ -504,6 +504,16 @@
                         "description": "Optional metadata to update for the media item."
                       }
                     ]
+                  },
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Name of the media item.",
+                    "examples": [
+                      "86—EIGHTY-SIX, Vol. 1"
+                    ]
                   }
                 }
               }
@@ -617,6 +627,7 @@
                 "schema": {
                   "type": "object",
                   "required": [
+                    "title",
                     "authors",
                     "genres"
                   ],
@@ -690,6 +701,11 @@
                       ],
                       "description": "Name of the publisher or publishing organization.",
                       "example": "Yen On"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the media item.",
+                      "example": "86—EIGHTY-SIX, Vol. 1"
                     }
                   }
                 }

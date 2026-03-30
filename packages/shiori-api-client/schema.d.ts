@@ -641,6 +641,11 @@ export interface operations {
                      */
                     cover_url?: string | null;
                     metadata?: null | components["schemas"]["PatchMetadata"];
+                    /**
+                     * @description Name of the media item.
+                     * @example 86—EIGHTY-SIX, Vol. 1
+                     */
+                    name?: string | null;
                 };
             };
         };
@@ -778,6 +783,11 @@ export interface operations {
                          * @example Yen On
                          */
                         publisher?: string | null;
+                        /**
+                         * @description Title of the media item.
+                         * @example 86—EIGHTY-SIX, Vol. 1
+                         */
+                        title: string;
                     };
                 };
             };

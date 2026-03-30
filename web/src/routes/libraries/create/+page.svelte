@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { createClient } from '@shiori/api-client';
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -7,6 +8,8 @@
 
 	import { librarySchema } from './schema';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+
+	let client = createClient({ fetch });
 
 	let name = $state('');
 	let path = $state('');
@@ -30,16 +33,14 @@
 		loading = true;
 
 		try {
-			const res = await fetch(`/api/v1/libraries`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(result.data)
+			const res = await client.POST('/api/v1/libraries', {
+				body: result.data
 			});
-			if (!res.ok) throw new Error('Failed to create library');
+			if (!res.response.ok) throw new Error('Failed to create library');
 
 			name = '';
 			path = '';
-			goto('/');
+			goto('/', { invalidate: ['libraries:create'] });
 		} catch (error) {
 			console.error(error);
 		} finally {

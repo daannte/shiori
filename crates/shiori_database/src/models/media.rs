@@ -88,12 +88,13 @@ impl NewMedia<'_> {
 #[derive(Debug, Default, AsChangeset)]
 #[diesel(table_name = media)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct UpdateMedia<'a> {
+pub struct PatchMedia<'a> {
     pub name: Option<&'a str>,
     pub cover_path: Option<&'a str>,
+    pub path: Option<&'a str>,
 }
 
-impl UpdateMedia<'_> {
+impl PatchMedia<'_> {
     pub async fn update(&self, conn: &mut AsyncPgConnection, media: Media) -> QueryResult<Media> {
         diesel::update(&media).set(self).get_result(conn).await
     }

@@ -62,7 +62,7 @@
 		try {
 			let res = await client.PATCH('/api/v1/media/{id}', {
 				params: { path: { id: data.id } },
-				body: { cover_url: metadataSearch.cover_url, metadata: patch }
+				body: { name: metadataSearch.title, cover_url: metadataSearch.cover_url, metadata: patch }
 			});
 			if (!res.response.ok) throw new Error('Not good');
 			metadataSearch = undefined;

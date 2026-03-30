@@ -1,4 +1,4 @@
-use std::path;
+use std::{ffi::OsStr, path};
 
 use axum::{
     Json,
@@ -8,8 +8,11 @@ use chrono::NaiveDate;
 use diesel_async::{AsyncConnection, scoped_futures::ScopedFutureExt};
 use serde::Deserialize;
 use shiori_api_types::{EncodableMediaWithMetadata, EncodableMetadata};
-use shiori_database::models::{Media, UpdateMedia, UpdateMediaMetadata};
-use shiori_filesystem::image::cover::{download_cover, get_cover};
+use shiori_database::models::{Media, PatchMedia, UpdateMediaMetadata};
+use shiori_filesystem::{
+    common::move_file,
+    image::cover::{download_cover, get_cover},
+};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
@@ -176,14 +179,37 @@ async fn patch_media(
             None
         };
 
-    let changes = UpdateMedia {
-        name: body.name.as_deref(),
-        cover_path: downloaded_cover.as_deref(),
-    };
-
     conn.transaction(|conn| {
         async move {
             let mut m = Media::find(conn, media_id).await?;
+
+            let mut new_path: Option<String> = None;
+
+            if let Some(name) = &body.name {
+                let source = path::Path::new(&m.path);
+
+                let ext = source.extension().and_then(OsStr::to_str).unwrap_or("");
+
+                let filename = if ext.is_empty() {
+                    name.clone()
+                } else {
+                    format!("{}.{}", name, ext)
+                };
+
+                let mut dest = path::PathBuf::from(&m.path);
+                dest.set_file_name(filename);
+
+                if source != dest {
+                    move_file(source, &dest).await?;
+                    new_path = Some(dest.to_string_lossy().to_string());
+                }
+            }
+
+            let changes = PatchMedia {
+                name: body.name.as_deref(),
+                cover_path: downloaded_cover.as_deref(),
+                path: new_path.as_deref(),
+            };
 
             if !changes.is_empty() {
                 m = changes.update(conn, m).await?;
