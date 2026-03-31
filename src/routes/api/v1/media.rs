@@ -113,11 +113,11 @@ pub struct PatchMetadata {
     pub published_at: Option<NaiveDate>,
 
     /// Description of the media item.
-    #[schema(example = "The San Magnolia Republic...")]
+    #[schema(examples("The San Magnolia Republic..."))]
     pub description: Option<String>,
 
     /// List of genres associated with the media item.
-    #[schema(example = json!(["Light Novel", "War"]))]
+    #[schema(examples(json!(["Light Novel", "War"])))]
     pub genres: Option<Vec<String>>,
 }
 

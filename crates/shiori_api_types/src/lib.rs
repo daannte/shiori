@@ -6,19 +6,19 @@ use shiori_database::models::{Library, Media, MediaMetadata};
 #[schema(as = Library)]
 pub struct EncodableLibrary {
     /// Unique identifier for the library.
-    #[schema(example = 86)]
+    #[schema(examples(86))]
     pub id: i32,
 
     /// Name of the library.
-    #[schema(example = "Light Novels")]
+    #[schema(examples("Light Novels"))]
     pub name: String,
 
     /// File system path to the library's directory.
-    #[schema(example = "/data/books/light_novels")]
+    #[schema(examples("/data/books/light_novels"))]
     pub path: String,
 
     /// Timestamp of when the media was created.
-    #[schema(example = "2024-11-08T17:23:41Z")]
+    #[schema(examples("2024-11-08T17:23:41Z"))]
     pub created_at: DateTime<Utc>,
 }
 
@@ -37,35 +37,35 @@ impl From<Library> for EncodableLibrary {
 #[schema(as = Media)]
 pub struct EncodableMedia {
     /// Unique identifier for the media item.
-    #[schema(example = 86)]
+    #[schema(examples(86))]
     pub id: i32,
 
     /// Name of the media file, excluding extension.
-    #[schema(example = "86_Volume_1")]
+    #[schema(examples("86_Volume_1"))]
     pub name: String,
 
     /// Size of the media file in bytes.
-    #[schema(example = "102400")]
+    #[schema(examples("102400"))]
     pub size: i64,
 
     /// File system path where the media is stored.
-    #[schema(example = "/data/books/light_novels/86_Volume_1.epub")]
+    #[schema(examples("/data/books/light_novels/86_Volume_1.epub"))]
     pub path: String,
 
     /// File extension of the media.
-    #[schema(example = "epub")]
+    #[schema(examples("epub"))]
     pub extension: String,
 
     /// Timestamp of when the media was created.
-    #[schema(example = "2026-03-23T12:00:00Z")]
+    #[schema(examples("2026-03-23T12:00:00Z"))]
     pub created_at: DateTime<Utc>,
 
     /// Library this media belongs to.
-    #[schema(example = 2)]
+    #[schema(examples(2))]
     pub library_id: i32,
 
     /// Endpoint where the cover is stored.
-    #[schema(example = "/api/v1/media/4/cover")]
+    #[schema(examples("/api/v1/media/4/cover"))]
     pub cover_path: Option<String>,
 }
 
@@ -90,32 +90,32 @@ impl From<Media> for EncodableMedia {
 #[schema(as = MediaMetadata)]
 pub struct EncodableMetadata {
     /// List of authors associated with the media item.
-    #[schema(example = json!(["Asato Asato"]))]
+    #[schema(examples(json!(["Asato Asato"])))]
     pub authors: Vec<String>,
 
     /// Name of the publisher or publishing organization.
-    #[schema(example = "Yen On")]
+    #[schema(examples("Yen On"))]
     pub publisher: Option<String>,
 
     /// International Standard Book Number (ISBN).
     /// Typically used for books.
-    #[schema(example = "1975303121")]
+    #[schema(examples("1975303121"))]
     pub isbn: Option<String>,
 
     /// Language of the media content.
-    #[schema(example = "English")]
+    #[schema(examples("English"))]
     pub language: Option<String>,
 
     /// Date the media was published.
-    #[schema(example = "2019-03-26")]
+    #[schema(examples("2019-03-26"))]
     pub published_at: Option<NaiveDate>,
 
     /// Description of the media item.
-    #[schema(example = "The San Magnolia Republic...")]
+    #[schema(examples("The San Magnolia Republic..."))]
     pub description: Option<String>,
 
     /// List of genres associated with the media item.
-    #[schema(example = json!(["Light Novel", "War"]))]
+    #[schema(examples(json!(["Light Novel", "War"])))]
     pub genres: Vec<String>,
 }
 
@@ -143,39 +143,39 @@ pub struct EncodableMediaWithMetadata {
 #[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EncodableMetadataSearch {
     /// Title of the media item.
-    #[schema(example = "86—EIGHTY-SIX, Vol. 1")]
+    #[schema(examples("86—EIGHTY-SIX, Vol. 1"))]
     pub title: String,
 
     /// List of authors associated with the media item.
-    #[schema(example = json!(["Asato Asato"]))]
+    #[schema(examples(json!(["Asato Asato"])))]
     pub authors: Vec<String>,
 
     /// Name of the publisher or publishing organization.
-    #[schema(example = "Yen On")]
+    #[schema(examples("Yen On"))]
     pub publisher: Option<String>,
 
     /// International Standard Book Number (ISBN).
     /// Typically used for books.
-    #[schema(example = "1975303121")]
+    #[schema(examples("1975303121"))]
     pub isbn: Option<String>,
 
     /// Language of the media content.
-    #[schema(example = "English")]
+    #[schema(examples("English"))]
     pub language: Option<String>,
 
     /// Date the media was published.
-    #[schema(example = "2019-03-26")]
+    #[schema(examples("2019-03-26"))]
     pub published_at: Option<NaiveDate>,
 
     /// URL of the cover image associated with the media.
-    #[schema(example = "https://example.com/cover.jpg")]
+    #[schema(examples("https://example.com/cover.jpg"))]
     pub cover_url: Option<String>,
 
     /// Description of the media item.
-    #[schema(example = "The San Magnolia Republic...")]
+    #[schema(examples("The San Magnolia Republic..."))]
     pub description: Option<String>,
 
     /// List of genres associated with the media item.
-    #[schema(example = json!(["Light Novel", "War"]))]
+    #[schema(examples(json!(["Light Novel", "War"])))]
     pub genres: Vec<String>,
 }
