@@ -23,7 +23,7 @@ use crate::{
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_media_cover))
-        .routes(routes!(get_media, patch_media))
+        .routes(routes!(get_media, patch_media, delete_media))
 }
 
 /// Fetch media cover.
@@ -87,6 +87,29 @@ async fn get_media(
     };
 
     Ok(Json(res))
+}
+
+/// Delete a media item.
+#[utoipa::path(
+    delete,
+    path = "/media/{id}",
+    tag = "media",
+    params(
+        ("id" = i32, Path, description = "Id of the media item")
+    ),
+    responses(
+        (status = 204, description = "Successfully delete media"),
+        (status = 404, description = "Media not found"),
+        (status = 500, description = "Internal server error")
+    )
+)]
+async fn delete_media(
+    Path(_media_id): Path<i32>,
+    State(app): State<AppState>,
+) -> APIResult<Json<()>> {
+    let mut _conn = app.db().await?;
+
+    Ok(Json(()))
 }
 
 #[derive(Default, Deserialize, utoipa::ToSchema)]
