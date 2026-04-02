@@ -60,8 +60,8 @@ impl Media {
             .await
     }
 
-    pub async fn delete(conn: &mut AsyncPgConnection, id: i32) -> QueryResult<usize> {
-        diesel::delete(media::table.find(id)).execute(conn).await
+    pub async fn delete(conn: &mut AsyncPgConnection, id: i32) -> QueryResult<Media> {
+        diesel::delete(media::table.find(id)).get_result(conn).await
     }
 }
 

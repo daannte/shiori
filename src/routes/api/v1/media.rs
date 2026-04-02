@@ -11,7 +11,7 @@ use shiori_api_types::{EncodableMediaWithMetadata, EncodableMetadata};
 use shiori_database::models::{Media, PatchMedia, UpdateMediaMetadata};
 use shiori_filesystem::{
     common::move_file,
-    image::cover::{download_cover, get_cover},
+    image::cover::{delete_cover, download_cover, get_cover},
 };
 use utoipa_axum::{router::OpenApiRouter, routes};
 
@@ -103,19 +103,16 @@ async fn get_media(
         (status = 500, description = "Internal server error")
     )
 )]
-async fn delete_media(
-    Path(media_id): Path<i32>,
-    State(app): State<AppState>,
-) -> APIResult<Json<()>> {
+async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) -> APIResult<()> {
     let mut conn = app.db().await?;
 
-    let num_deleted = Media::delete(&mut conn, media_id).await?;
+    let media = Media::delete(&mut conn, media_id).await?;
 
-    if num_deleted == 0 {
-        return Err(APIError::NotFound("Media not found".to_string()));
+    if let Some(cover_path) = media.cover_path {
+        delete_cover(path::Path::new(&cover_path)).await?
     }
 
-    Ok(Json(()))
+    Ok(())
 }
 
 #[derive(Default, Deserialize, utoipa::ToSchema)]
