@@ -26,7 +26,3 @@ pub async fn download_cover(url: &str) -> Result<String, Box<dyn std::error::Err
 
     Ok(path.to_string_lossy().to_string())
 }
-
-pub async fn delete_cover(path: &Path) -> io::Result<()> {
-    fs::remove_file(path).await
-}

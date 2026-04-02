@@ -10,8 +10,8 @@ use serde::Deserialize;
 use shiori_api_types::{EncodableMediaWithMetadata, EncodableMetadata};
 use shiori_database::models::{Media, PatchMedia, UpdateMediaMetadata};
 use shiori_filesystem::{
-    common::move_file,
-    image::cover::{delete_cover, download_cover, get_cover},
+    common::{delete_file, move_file},
+    image::cover::{download_cover, get_cover},
 };
 use utoipa_axum::{router::OpenApiRouter, routes};
 
@@ -109,8 +109,10 @@ async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) ->
     let media = Media::delete(&mut conn, media_id).await?;
 
     if let Some(cover_path) = media.cover_path {
-        delete_cover(path::Path::new(&cover_path)).await?
+        delete_file(path::Path::new(&cover_path)).await?
     }
+
+    delete_file(path::Path::new(&media.path)).await?;
 
     Ok(())
 }

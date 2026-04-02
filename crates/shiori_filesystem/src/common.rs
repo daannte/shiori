@@ -8,3 +8,7 @@ use tokio::fs;
 pub async fn move_file(source: &Path, dest: &Path) -> std::io::Result<()> {
     fs::rename(source, dest).await
 }
+
+pub async fn delete_file(path: &Path) -> std::io::Result<()> {
+    fs::remove_file(path).await
+}
