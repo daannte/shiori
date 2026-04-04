@@ -64,7 +64,6 @@
 			});
 			if (!res.data || res.error) throw new Error('Failed to update directories');
 
-			console.log(res.data);
 			dirs = res.data.directories;
 			parent = res.data.parent;
 		} catch (error) {

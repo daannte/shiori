@@ -50,16 +50,8 @@ async fn list_directories(
         ));
     }
 
-    if !path.exists() {
-        return Err(APIError::NotFound(format!(
-            "Directory does not exist: {}",
-            path.display()
-        )));
-    } else if !path.is_dir() {
-        return Err(APIError::BadRequest(format!(
-            "Path must be a directory: {}",
-            path.display()
-        )));
+    if !path.is_dir() {
+        return Err(APIError::BadRequest("Path must be a directory".to_string()));
     }
 
     let dirs = shiori_filesystem::common::list_directories(&path, &app.base_path)?;

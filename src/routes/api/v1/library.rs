@@ -24,7 +24,6 @@ pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(list_libraries, create_library))
         .routes(routes!(list_library_media, create_library_media))
-        .routes(routes!(get_library))
 }
 
 /// List all libraries.
@@ -52,12 +51,16 @@ async fn list_libraries(State(app): State<AppState>) -> APIResult<Json<Vec<Encod
 #[derive(Deserialize, utoipa::ToSchema)]
 struct NewLibraryRequest {
     /// Name of the library.
+    #[schema(examples("Light Novels"))]
     pub name: String,
-    /// File system path to the library's directory.
+    /// File system path to the library's directory, relative to the application's base directory.
+    #[schema(examples("light_novels"))]
     pub path: String,
 }
 
 /// Create a new library.
+///
+/// The directory must already exist on the system.
 #[utoipa::path(
     post,
     path = "/libraries",
@@ -73,18 +76,28 @@ async fn create_library(
     State(app): State<AppState>,
     Json(body): Json<NewLibraryRequest>,
 ) -> APIResult<Json<EncodableLibrary>> {
-    if !path::Path::new(&body.path).is_absolute() {
+    if path::Path::new(&body.path).is_absolute() {
         return Err(APIError::BadRequest(
-            "Library path must be absolute".to_string(),
+            "Absolute paths not allowed".to_string(),
         ));
+    }
+
+    let new_path = app.base_path.join(body.path).canonicalize()?;
+
+    if !new_path.starts_with(&app.base_path) {
+        return Err(APIError::Forbidden(
+            "Access to the requested path is not allowed".to_string(),
+        ));
+    }
+
+    if !new_path.is_dir() {
+        return Err(APIError::BadRequest("Path must be a directory".to_string()));
     }
 
     let mut conn = app.db().await?;
 
     // NOTE: There has to be a better way to do this
     let libraries = Library::all(&mut conn).await?;
-
-    let new_path = path::Path::new(&body.path);
 
     for lib in libraries {
         let lib_path = path::Path::new(&lib.path);
@@ -97,7 +110,7 @@ async fn create_library(
             )));
         }
 
-        if lib_path.starts_with(new_path) {
+        if lib_path.starts_with(&new_path) {
             return Err(APIError::BadRequest(format!(
                 "Library path '{}' contains existing library '{}'",
                 new_path.display(),
@@ -106,37 +119,16 @@ async fn create_library(
         }
     }
 
+    let path_str = new_path.to_str().expect("Path contains invalid UTF-8");
+
     let new_library = NewLibrary {
         name: &body.name,
-        path: &body.path,
+        path: path_str,
     };
 
     let library = new_library.insert(&conn).await?;
 
-    // TODO: Make this atomic with the db insert? (if possible)
-    fs::create_dir_all(body.path).await?;
-
     Ok(Json(library.into()))
-}
-
-/// Fetch library.
-///
-/// Not implemented
-#[utoipa::path(
-    get,
-    path = "/libraries/{id}",
-    tag = "library",
-    params(
-        ("id" = i32, Path, description = "Id of the library")
-    ),
-    responses(
-        (status = 200, description = "Successfully fetched library"),
-        (status = 404, description = "Library not found"),
-        (status = 500, description = "Internal server error")
-    )
-)]
-async fn get_library(Path(_library_id): Path<i32>, State(_app): State<AppState>) -> APIResult<()> {
-    Err(APIError::NotImplemented)
 }
 
 /// List library media.
