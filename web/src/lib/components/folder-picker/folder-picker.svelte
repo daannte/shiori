@@ -23,7 +23,7 @@
 </script>
 
 <Dialog.Root bind:open={isOpen}>
-	<Dialog.Content>
+	<Dialog.Content showCloseButton={false}>
 		<Dialog.Header>
 			<Dialog.Title>Select Library Folder</Dialog.Title>
 			<Dialog.Description>Paths are relative to the application's base directory</Dialog.Description

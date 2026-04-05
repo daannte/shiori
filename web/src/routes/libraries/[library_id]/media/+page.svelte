@@ -1,13 +1,17 @@
 <script lang="ts">
 	import MediaCard from '$lib/components/media-card.svelte';
 	import EmptyView from '$lib/components/empty-view.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	import BookText from '@lucide/svelte/icons/book-text';
+	import UploadDialog from '$lib/components/upload/upload-dialog.svelte';
 
 	let { data } = $props();
+
+	let isUploadOpen = $state(false);
 </script>
 
-<div class="flex p-6">
+<div class="flex">
 	{#if data.media.length > 0}
 		<div
 			class="grid w-full grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
@@ -23,8 +27,10 @@
 			icon={BookText}
 		>
 			{#snippet content()}
-				<p>TODO add button to upload media</p>
+				<Button size="lg" onclick={() => (isUploadOpen = true)}>Upload Files</Button>
 			{/snippet}
 		</EmptyView>
 	{/if}
 </div>
+
+<UploadDialog bind:isOpen={isUploadOpen} />
