@@ -1,7 +1,4 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{fs, path::Path};
 
 use rbook::Epub as Rpub;
 
@@ -9,8 +6,7 @@ pub struct Epub;
 
 impl Epub {
     // TODO: Change to return Result
-    pub fn get_cover_path(file_stem: &str, path: &Path, base_path: &PathBuf) -> Option<String> {
-        // NOTE: Temp dir for now
+    pub fn get_cover_path(file_stem: &str, path: &Path, base_path: &Path) -> Option<String> {
         let covers_dir = base_path.join("covers");
         let epub = Rpub::open(path).ok()?;
         let cover = epub.manifest().cover_image()?;

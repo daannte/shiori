@@ -1,6 +1,5 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use shiori_database::models::{Library, Media, MediaMetadata};
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]

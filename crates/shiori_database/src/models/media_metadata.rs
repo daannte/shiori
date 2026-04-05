@@ -80,7 +80,7 @@ impl UpdateMediaMetadata {
             publisher: self.publisher.clone(),
             isbn: self.isbn.clone(),
             language: self.language.clone(),
-            published_at: self.published_at.clone(),
+            published_at: self.published_at,
             description: self.description.clone(),
             genres: self.genres.clone().unwrap_or_default(),
         };
