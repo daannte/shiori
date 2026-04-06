@@ -24,7 +24,7 @@ pub async fn download_cover(
         .extension()
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase)
-        .ok_or_else(|| "Expected file to have an extension")?;
+        .ok_or("Expected file to have an extension")?;
 
     let path = covers_dir.join(format!("{media_id}.{ext}"));
 
