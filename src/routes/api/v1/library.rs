@@ -10,7 +10,7 @@ use axum::{
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde::Deserialize;
 use shiori_api_types::{EncodableLibrary, EncodableMedia};
-use shiori_database::models::{Library, Media, NewLibrary, NewMedia};
+use shiori_database::models::{Library, Media, NewLibrary, NewMedia, PatchMedia};
 use tempfile::NamedTempFile;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -225,8 +225,6 @@ async fn create_library_media(
             ));
         }
 
-        let cover_path = Epub::get_cover_path(file_stem, f.contents.path(), &app.base_path);
-
         let new_media = NewMedia {
             name: file_stem,
             size: f
@@ -243,13 +241,21 @@ async fn create_library_media(
             path: &media_path.to_string_lossy(),
             extension: &ext,
             library_id,
-            cover_path: cover_path.as_deref(),
+            cover_path: None,
         };
 
         let media = new_media.insert(&mut conn).await?;
-        uploaded.push(media.into());
-
         fs::copy(f.contents.path(), media_path).await?;
+
+        let cover_path = Epub::get_cover_path(&media.id, f.contents.path(), &app.base_path);
+
+        let patch = PatchMedia {
+            cover_path: cover_path.as_deref(),
+            ..Default::default()
+        };
+        let m = patch.update(&mut conn, media).await?;
+
+        uploaded.push(m.into());
     }
 
     Ok(Json(uploaded))

@@ -199,13 +199,11 @@ async fn patch_media(
     let mut conn = app.db().await?;
 
     let downloaded_cover = if let Some(cover_url) = &body.cover_url {
-        Some(
-            download_cover(cover_url, &app.base_path)
-                .await
-                .map_err(|_| {
-                    APIError::InternalServerError("Failed to download cover".to_string())
-                })?,
-        )
+        let new_cover_path = download_cover(cover_url, &app.base_path, &media_id)
+            .await
+            .map_err(|_| APIError::InternalServerError("Failed to download cover".to_string()))?;
+
+        Some(new_cover_path)
     } else {
         None
     };
