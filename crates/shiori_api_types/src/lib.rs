@@ -190,6 +190,10 @@ pub struct EncodableBookSearch {
     #[schema(examples("Asato Asato"))]
     pub authors: Vec<String>,
 
+    /// Provider id of the media.
+    #[schema(examples(41825371))]
+    pub id: i32,
+
     /// URL of the cover image associated with the media.
     #[schema(examples("https://example.com/cover.jpg"))]
     pub cover_url: Option<String>,

@@ -1,3 +1,4 @@
+use scraper::{ElementRef, Selector};
 use shiori_api_types::EncodableBookSearch;
 
 use crate::provider::{MetadataProvider, MetadataResult};
@@ -11,14 +12,14 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<EncodableBo
     );
 
     let document = fetch_doc(&url).await?;
-    let selector = scraper::Selector::parse("table.tableList").unwrap();
+    let selector = Selector::parse("table.tableList").unwrap();
 
     let table = match document.select(&selector).next() {
         Some(table) => table,
         None => return Ok(Vec::new()),
     };
 
-    let row_selector = scraper::Selector::parse("tr[itemtype='http://schema.org/Book']").unwrap();
+    let row_selector = Selector::parse("tr[itemtype='http://schema.org/Book']").unwrap();
 
     let books = table.select(&row_selector);
 
@@ -32,6 +33,7 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<EncodableBo
         res.push(EncodableBookSearch {
             title,
             authors,
+            id: extract_id(book),
             cover_url: extract_cover_url(book),
         });
     }
@@ -39,8 +41,18 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<EncodableBo
     Ok(res)
 }
 
-fn extract_title(book: scraper::ElementRef<'_>) -> String {
-    let title_selector = scraper::Selector::parse("a[title]").unwrap();
+fn extract_id(book: ElementRef<'_>) -> i32 {
+    let id_selector = Selector::parse("div[id]").unwrap();
+
+    book.select(&id_selector)
+        .next()
+        .and_then(|div| div.value().attr("id"))
+        .map(|id_str| id_str.parse::<i32>().unwrap())
+        .expect("Failed to extract id")
+}
+
+fn extract_title(book: ElementRef<'_>) -> String {
+    let title_selector = Selector::parse("a[title]").unwrap();
 
     book.select(&title_selector)
         .next()
@@ -49,16 +61,16 @@ fn extract_title(book: scraper::ElementRef<'_>) -> String {
         .unwrap_or_default()
 }
 
-fn extract_authors(book: scraper::ElementRef<'_>) -> Vec<String> {
-    let author_selector = scraper::Selector::parse("a.authorName").unwrap();
+fn extract_authors(book: ElementRef<'_>) -> Vec<String> {
+    let author_selector = Selector::parse("a.authorName").unwrap();
 
     book.select(&author_selector)
         .filter_map(|e| e.text().next().map(|a| a.trim().to_string()))
         .collect()
 }
 
-fn extract_cover_url(book: scraper::ElementRef<'_>) -> Option<String> {
-    let img_selector = scraper::Selector::parse("img").unwrap();
+fn extract_cover_url(book: ElementRef<'_>) -> Option<String> {
+    let img_selector = Selector::parse("img").unwrap();
 
     book.select(&img_selector)
         .next()?
