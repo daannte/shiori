@@ -1,7 +1,10 @@
 use axum::{Json, extract::Query};
 use serde::Deserialize;
 use shiori_api_types::EncodableMetadataSearch;
-use shiori_metadata::{GoodreadsProvider, MetadataProvider};
+use shiori_metadata::{
+    GoodreadsProvider,
+    provider::{BooksParams, MetadataProvider},
+};
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
@@ -64,24 +67,35 @@ struct ListQueryParams {
     )
 )]
 async fn search_books(Query(params): Query<BookQueryParams>) -> APIResult<Json<()>> {
-    // let metadata = match params.provider.as_str() {
-    //     "goodreads" => GoodreadsProvider::search_id(&params.q_string).await?,
-    //     _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
-    // };
+    let _ = match params.provider.as_str() {
+        "goodreads" => GoodreadsProvider::search_books(params.into()).await?,
+        _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
+    };
     Ok(Json(()))
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 struct BookQueryParams {
-    /// A search query string.
-    #[serde(rename = "q")]
-    q_string: String,
+    /// The name of the author to search for.
+    author: String,
+
+    /// The title of the book to search for.
+    title: String,
 
     /// The provider to use for the search.
     /// Defaults to "goodreads" if not provided in the query.
     #[serde(default = "default_provider")]
     provider: String,
+}
+
+impl From<BookQueryParams> for BooksParams {
+    fn from(value: BookQueryParams) -> Self {
+        Self {
+            author: value.author,
+            title: value.title,
+        }
+    }
 }
 
 fn default_provider() -> String {
