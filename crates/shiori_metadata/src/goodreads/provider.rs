@@ -2,6 +2,7 @@ use crate::{
     goodreads::{book, search},
     provider::{BooksParams, MetadataProvider, MetadataResult},
 };
+use futures::{StreamExt, stream};
 use shiori_api_types::EncodableMetadataSearch;
 
 pub struct GoodreadsProvider;
@@ -13,14 +14,15 @@ impl MetadataProvider for GoodreadsProvider {
     async fn search_books(params: BooksParams) -> MetadataResult<Vec<EncodableMetadataSearch>> {
         let ids = search::search_books(params).await?;
 
-        let mut res = Vec::new();
+        let results = stream::iter(ids)
+            .map(|id| async move { Self::search_id(&id).await })
+            .buffer_unordered(5)
+            .collect::<Vec<_>>()
+            .await;
 
-        for id in ids {
-            let book = Self::search_id(&id).await?;
-            res.push(book);
-        }
+        let books = results.into_iter().filter_map(Result::ok).collect();
 
-        Ok(res)
+        Ok(books)
     }
 
     async fn search_id(id: &str) -> MetadataResult<EncodableMetadataSearch> {
