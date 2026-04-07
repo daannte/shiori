@@ -1,6 +1,6 @@
 use axum::{Json, extract::Query};
 use serde::Deserialize;
-use shiori_api_types::EncodableMetadataSearch;
+use shiori_api_types::{EncodableBookSearch, EncodableMetadataSearch};
 use shiori_metadata::{
     GoodreadsProvider,
     provider::{BooksParams, MetadataProvider},
@@ -41,7 +41,7 @@ async fn get_book(
     Ok(Json(metadata))
 }
 
-#[derive(Debug, Deserialize, IntoParams)]
+#[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 struct ListQueryParams {
     /// A search query string.
@@ -61,20 +61,22 @@ struct ListQueryParams {
     params(BookQueryParams),
     tag = "metadata",
     responses(
-        (status = 200, description = "Successfully found books"),
+        (status = 200, description = "Successfully found books", body=inline(Vec<EncodableBookSearch>)),
         (status = 400, description = "Invalid query parameters"),
         (status = 500, description = "Internal server error")
     )
 )]
-async fn search_books(Query(params): Query<BookQueryParams>) -> APIResult<Json<()>> {
-    let _ = match params.provider.as_str() {
+async fn search_books(
+    Query(params): Query<BookQueryParams>,
+) -> APIResult<Json<Vec<EncodableBookSearch>>> {
+    let books = match params.provider.as_str() {
         "goodreads" => GoodreadsProvider::search_books(params.into()).await?,
         _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
     };
-    Ok(Json(()))
+    Ok(Json(books))
 }
 
-#[derive(Debug, Deserialize, IntoParams)]
+#[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 struct BookQueryParams {
     /// The name of the author to search for.

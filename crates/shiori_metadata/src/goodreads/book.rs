@@ -2,13 +2,12 @@ use chrono::DateTime;
 use serde_json::Value;
 use shiori_api_types::EncodableMetadataSearch;
 
-use crate::provider::MetadataProvider;
+use crate::provider::{MetadataProvider, MetadataResult};
 use crate::{errors::MetadataError, goodreads::parsing::fetch_doc};
 
-pub async fn search_id(book: &str) -> Result<EncodableMetadataSearch, MetadataError> {
+pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     let document = fetch_doc(&format!("{}{}", super::GoodreadsProvider::BOOK_URL, book)).await?;
-    let selector =
-        scraper::Selector::parse("script#__NEXT_DATA__").map_err(|_| MetadataError::HtmlParse)?;
+    let selector = scraper::Selector::parse("script#__NEXT_DATA__").unwrap();
 
     let script = document
         .select(&selector)

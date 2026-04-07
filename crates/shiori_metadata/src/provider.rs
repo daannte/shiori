@@ -1,15 +1,17 @@
-use shiori_api_types::EncodableMetadataSearch;
+use shiori_api_types::{EncodableBookSearch, EncodableMetadataSearch};
 use url::form_urlencoded;
 
 use crate::errors::MetadataError;
+
+pub type MetadataResult<T> = Result<T, MetadataError>;
 
 #[allow(async_fn_in_trait)]
 pub trait MetadataProvider {
     const BOOK_URL: &str;
     const SEARCH_URL: &str;
 
-    async fn search_books(search_term: BooksParams) -> Result<(), MetadataError>;
-    async fn search_id(id: &str) -> Result<EncodableMetadataSearch, MetadataError>;
+    async fn search_books(search_term: BooksParams) -> MetadataResult<Vec<EncodableBookSearch>>;
+    async fn search_id(id: &str) -> MetadataResult<EncodableMetadataSearch>;
 }
 
 pub struct BooksParams {
