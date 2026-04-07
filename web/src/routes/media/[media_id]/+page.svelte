@@ -8,7 +8,7 @@
 	import { invalidate } from '$app/navigation';
 
 	import { Button } from '$lib/components/ui/button';
-	import MetadataDialog from '$lib/components/metadata-dialog.svelte';
+	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
 
 	import Download from '@lucide/svelte/icons/download';
 	import Database from '@lucide/svelte/icons/database';
@@ -75,8 +75,6 @@
 			console.error('Failed to save metadata: ', e);
 		}
 	}
-
-	$inspect(metadataSearch);
 </script>
 
 <div class="flex h-screen flex-col xl:flex-row">

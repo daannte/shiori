@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { createClient, type operations } from '@shiori/api-client';
 
-	import * as Dialog from './ui/dialog';
-	import { Button } from './ui/button';
-	import { Label } from './ui/label';
-	import { Input } from './ui/input';
+	import * as Dialog from '../ui/dialog';
+	import { Button } from '../ui/button';
+	import { Label } from '../ui/label';
+	import { Input } from '../ui/input';
 
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+	import SearchCard from './search-card.svelte';
 
 	type MetadataSearch =
 		operations['get_book_metadata']['responses']['200']['content']['application/json'];
@@ -49,7 +50,7 @@
 	}
 
 	async function search() {
-		if (!author || !title) {
+		if (!(author.trim() || title.trim())) {
 			return;
 		}
 
@@ -89,22 +90,7 @@
 
 		<div class="mt-6 grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 			{#each books as book}
-				<button
-					onclick={() => getMetadata(book.provider_id)}
-					class="flex transform cursor-pointer flex-row gap-2 text-left transition duration-300 hover:scale-105 md:max-h-48"
-				>
-					<img class="h-full rounded-lg object-cover" src={book.cover_url} alt="Book Cover" />
-
-					<div class="flex flex-1 flex-col">
-						<span class="font-semibold">{book.title}</span>
-						<p class="text-sm">
-							by <span class="font-medium">{book.authors}</span>
-						</p>
-						<p class="mt-2 line-clamp-5 text-sm text-muted-foreground">
-							{@html book.description || 'No description available.'}
-						</p>
-					</div>
-				</button>
+				<SearchCard {book} onclick={getMetadata} />
 			{/each}
 		</div>
 
