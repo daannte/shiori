@@ -6,10 +6,10 @@ use crate::{config::state::AppState, routes::openapi::BaseOpenApi};
 mod api;
 mod koreader;
 mod opds;
-mod openapi;
+pub mod openapi;
 
 pub fn build_axum_router(state: AppState) -> Router<()> {
-    let (router, openapi) = BaseOpenApi::router().merge(api::mount()).split_for_parts();
+    let (router, openapi) = BaseOpenApi::build();
 
     router
         .merge(Redoc::with_url("/docs", openapi))

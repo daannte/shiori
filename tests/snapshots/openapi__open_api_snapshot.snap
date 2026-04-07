@@ -1,3 +1,7 @@
+---
+source: tests/openapi.rs
+expression: newest.to_pretty_json().unwrap()
+---
 {
   "openapi": "3.1.0",
   "info": {
@@ -726,13 +730,13 @@
         }
       }
     },
-    "/api/v1/metadata/search": {
+    "/api/v1/metadata/book": {
       "get": {
         "tags": [
           "metadata"
         ],
-        "summary": "Search for metadata.",
-        "operationId": "search_metadata",
+        "summary": "Search for book metadata.",
+        "operationId": "get_book",
         "parameters": [
           {
             "name": "q",
@@ -755,7 +759,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Successfully found metadata",
+            "description": "Successfully found book metadata",
             "content": {
               "application/json": {
                 "schema": {
@@ -853,6 +857,107 @@
                       "examples": [
                         "86—EIGHTY-SIX, Vol. 1"
                       ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/metadata/search": {
+      "get": {
+        "tags": [
+          "metadata"
+        ],
+        "summary": "Search for books.",
+        "operationId": "search_books",
+        "parameters": [
+          {
+            "name": "author",
+            "in": "query",
+            "description": "The name of the author to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "The title of the book to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "The provider to use for the search.\nDefaults to \"goodreads\" if not provided in the query.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully found books",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "title",
+                      "authors",
+                      "id"
+                    ],
+                    "properties": {
+                      "authors": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "examples": [
+                            "Asato Asato"
+                          ]
+                        },
+                        "description": "List of authors associated with the media item."
+                      },
+                      "cover_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "URL of the cover image associated with the media.",
+                        "examples": [
+                          "https://example.com/cover.jpg"
+                        ]
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Provider id of the media.",
+                        "examples": [
+                          41825371
+                        ]
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the media item.",
+                        "examples": [
+                          "86—EIGHTY-SIX, Vol. 1"
+                        ]
+                      }
                     }
                   }
                 }
