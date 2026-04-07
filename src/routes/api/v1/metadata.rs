@@ -11,26 +11,28 @@ use crate::{
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new().routes(routes!(search_metadata))
+    OpenApiRouter::new()
+        .routes(routes!(search_books))
+        .routes(routes!(get_book))
 }
 
-/// Search for metadata.
+/// Search for book metadata.
 #[utoipa::path(
     get,
-    path = "/metadata/search",
+    path = "/metadata/book",
     params(ListQueryParams),
     tag = "metadata",
     responses(
-        (status = 200, description = "Successfully found metadata", body = inline(EncodableMetadataSearch)),
+        (status = 200, description = "Successfully found book metadata", body = inline(EncodableMetadataSearch)),
         (status = 400, description = "Invalid query parameters"),
         (status = 500, description = "Internal server error")
     )
 )]
-async fn search_metadata(
+async fn get_book(
     Query(params): Query<ListQueryParams>,
 ) -> APIResult<Json<EncodableMetadataSearch>> {
     let metadata = match params.provider.as_str() {
-        "goodreads" => GoodreadsProvider::search(&params.q_string).await?,
+        "goodreads" => GoodreadsProvider::search_id(&params.q_string).await?,
         _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
     };
     Ok(Json(metadata))
@@ -39,6 +41,39 @@ async fn search_metadata(
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 struct ListQueryParams {
+    /// A search query string.
+    #[serde(rename = "q")]
+    q_string: String,
+
+    /// The provider to use for the search.
+    /// Defaults to "goodreads" if not provided in the query.
+    #[serde(default = "default_provider")]
+    provider: String,
+}
+
+/// Search for books.
+#[utoipa::path(
+    get,
+    path = "/metadata/search",
+    params(BookQueryParams),
+    tag = "metadata",
+    responses(
+        (status = 200, description = "Successfully found books"),
+        (status = 400, description = "Invalid query parameters"),
+        (status = 500, description = "Internal server error")
+    )
+)]
+async fn search_books(Query(params): Query<BookQueryParams>) -> APIResult<Json<()>> {
+    // let metadata = match params.provider.as_str() {
+    //     "goodreads" => GoodreadsProvider::search_id(&params.q_string).await?,
+    //     _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
+    // };
+    Ok(Json(()))
+}
+
+#[derive(Debug, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
+struct BookQueryParams {
     /// A search query string.
     #[serde(rename = "q")]
     q_string: String,

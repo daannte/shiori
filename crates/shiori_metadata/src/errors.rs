@@ -11,9 +11,9 @@ pub enum MetadataError {
     #[error("failed to parse HTML")]
     HtmlParse,
 
-    /// Missing expected JSON script tag
-    #[error("missing __NEXT_DATA__ script in HTML")]
-    MissingScriptTag,
+    /// Missing expected tag
+    #[error("missing tag: {0}")]
+    MissingTag(String),
 
     /// Failed to parse JSON from the provider
     #[error("failed to parse JSON: {0}")]

@@ -56,9 +56,9 @@ impl From<MetadataError> for APIError {
                 APIError::InternalServerError("Failed to parse HTML from provider".into())
             }
 
-            MetadataError::MissingScriptTag => APIError::InternalServerError(
-                "Provider response missing expected script tag".into(),
-            ),
+            MetadataError::MissingTag(_) => {
+                APIError::InternalServerError("Provider response missing expected tag".into())
+            }
 
             MetadataError::JsonParse(_) => {
                 APIError::InternalServerError("Failed to parse JSON from provider".into())

@@ -2302,12 +2302,14 @@ name = "shiori_metadata"
 version = "0.0.0"
 dependencies = [
  "chrono",
+ "once_cell",
  "reqwest",
  "scraper",
  "serde_json",
  "shiori_api_types",
  "shiori_database",
  "thiserror 2.0.18",
+ "url",
 ]
 
 [[package]]
