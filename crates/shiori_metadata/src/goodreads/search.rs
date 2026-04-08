@@ -1,5 +1,6 @@
 use scraper::{ElementRef, Selector};
 
+use crate::MetadataError;
 use crate::provider::{MetadataProvider, MetadataResult};
 use crate::{goodreads::parsing::fetch_doc, provider::BooksParams};
 
@@ -12,12 +13,23 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<String>> {
         params.as_query_string()
     );
 
-    let document = fetch_doc(&url).await?;
+    tracing::debug!("Fetching book data from URL: {}", url);
+
+    let document = match fetch_doc(&url).await {
+        Ok(doc) => doc,
+        Err(e) => {
+            tracing::error!("Error fetching document for books: {}", e);
+            return Err(MetadataError::Network(e));
+        }
+    };
     let selector = Selector::parse("table.tableList").unwrap();
 
     let table = match document.select(&selector).next() {
         Some(table) => table,
-        None => return Ok(Vec::new()),
+        None => {
+            tracing::info!("No table found in document");
+            return Ok(Vec::new());
+        }
     };
 
     let row_selector = Selector::parse("tr[itemtype='http://schema.org/Book']").unwrap();
@@ -26,23 +38,29 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<String>> {
 
     let mut res = Vec::new();
 
+    // TODO: some sort of fuzzy/scoring system
+    // to pick good books with authors and title
     for book in books {
-        // TODO: some sort of fuzzy/scoring system
-        // to pick good books with authors and title
-        res.push(extract_id(book));
+        let id = extract_id(book);
+
+        if id.is_none() {
+            tracing::warn!("Failed to extract ID from a book, skipping...");
+            continue;
+        }
+
+        res.push(id.unwrap());
     }
 
     Ok(res)
 }
 
-fn extract_id(book: ElementRef<'_>) -> String {
+fn extract_id(book: ElementRef<'_>) -> Option<String> {
     let id_selector = Selector::parse("div[id]").unwrap();
 
     book.select(&id_selector)
         .next()
         .and_then(|div| div.value().attr("id"))
         .map(|s| s.trim().to_string())
-        .unwrap_or_default()
 }
 
 fn _extract_title(book: ElementRef<'_>) -> String {
@@ -52,7 +70,10 @@ fn _extract_title(book: ElementRef<'_>) -> String {
         .next()
         .and_then(|e| e.value().attr("title"))
         .map(|s| s.trim().to_string())
-        .unwrap_or_default()
+        .unwrap_or_else(|| {
+            tracing::warn!("Failed to extract title from book");
+            String::default()
+        })
 }
 
 fn _extract_authors(book: ElementRef<'_>) -> Vec<String> {

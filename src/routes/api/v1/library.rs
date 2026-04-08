@@ -119,12 +119,16 @@ async fn create_library(
         }
     }
 
-    let path_str = new_path.to_str().expect("Path contains invalid UTF-8");
+    let path_str = new_path
+        .to_str()
+        .ok_or_else(|| APIError::BadRequest("Path contains invalid UTF-8".to_string()))?;
 
     let new_library = NewLibrary {
         name: &body.name,
         path: path_str,
     };
+
+    tracing::debug!(?new_library, "Inserting new library into DB");
 
     let library = new_library.insert(&conn).await?;
 
@@ -235,7 +239,7 @@ async fn create_library_media(
                 .len()
                 .try_into()
                 .unwrap_or_else(|_| {
-                    println!("Failed to convert to i64");
+                    tracing::error!(?media_path, "Failed to convert file size to i64");
                     0
                 }),
             path: &media_path.to_string_lossy(),
@@ -244,6 +248,7 @@ async fn create_library_media(
             cover_path: None,
         };
 
+        tracing::debug!(?new_media, "Inserting new media into DB");
         let media = new_media.insert(&mut conn).await?;
         fs::copy(f.contents.path(), media_path).await?;
 
@@ -254,6 +259,7 @@ async fn create_library_media(
             ..Default::default()
         };
         let m = patch.update(&mut conn, media).await?;
+        tracing::debug!("Updated media with cover path");
 
         uploaded.push(m.into());
     }

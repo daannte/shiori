@@ -66,7 +66,7 @@ impl Media {
 }
 
 /// Represents a new media record insertable to the `media` table.
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[diesel(table_name = media)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewMedia<'a> {

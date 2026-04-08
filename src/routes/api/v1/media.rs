@@ -215,6 +215,8 @@ async fn patch_media(
             let mut new_path: Option<String> = None;
 
             if let Some(name) = &body.name {
+                tracing::debug!("Changing name of media to: {}", name);
+
                 let source = path::Path::new(&m.path);
 
                 let ext = source.extension().and_then(OsStr::to_str).unwrap_or("");
@@ -229,6 +231,11 @@ async fn patch_media(
                 dest.set_file_name(filename);
 
                 if source != dest {
+                    tracing::debug!(
+                        "Moving file from {} to {}",
+                        source.display(),
+                        dest.display()
+                    );
                     move_file(source, &dest).await?;
                     new_path = Some(dest.to_string_lossy().to_string());
                 }
@@ -246,6 +253,7 @@ async fn patch_media(
 
             let metadata = if let Some(metadata) = &body.metadata {
                 if metadata.is_empty() {
+                    tracing::debug!(%media_id, "Metadata is empty, skipping");
                     None
                 } else {
                     let changes = UpdateMediaMetadata {
@@ -258,6 +266,7 @@ async fn patch_media(
                         genres: metadata.genres.clone(),
                     };
 
+                    tracing::debug!(%media_id, ?changes, "Updating metadata");
                     Some(changes.upsert(conn, m.id).await?)
                 }
             } else {
