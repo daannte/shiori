@@ -61,8 +61,6 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
         MetadataError::Other(error_msg)
     })?;
 
-    tracing::info!("Successfully retrieved book information for book: {}", book);
-
     let mut metadata = EncodableMetadataSearch {
         title,
         authors: extract_author_names(apollo_state, book_info),
