@@ -34,8 +34,6 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<String>> {
 
     let row_selector = Selector::parse("tr[itemtype='http://schema.org/Book']").unwrap();
 
-    tracing::info!("Extracting books from table...");
-
     let books = table.select(&row_selector).take(BOOK_LIMIT);
 
     let mut res = Vec::new();
@@ -52,8 +50,6 @@ pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<String>> {
 
         res.push(id.unwrap());
     }
-
-    tracing::info!("Successfully extracted {} books", res.len());
 
     Ok(res)
 }

@@ -8,11 +8,10 @@ use crate::{errors::MetadataError, goodreads::parsing::fetch_doc};
 pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     let url = format!("{}{}", super::GoodreadsProvider::BOOK_URL, book);
 
-    tracing::info!("Starting search for book with ID: {}", book);
     let document = match fetch_doc(&url).await {
         Ok(doc) => doc,
         Err(e) => {
-            tracing::error!("Error fetching document for book {}: {}", book, e);
+            tracing::error!(%book, "Failed to fetch document: {:?}", e);
             return Err(MetadataError::Network(e));
         }
     };
@@ -22,7 +21,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
         Some(script) => script,
         None => {
             let error_msg = "__NEXT_DATA__ script tag not found";
-            tracing::error!("{}", error_msg);
+            tracing::error!(%book, "{}", error_msg);
             return Err(MetadataError::MissingTag(error_msg.to_string()));
         }
     };
@@ -30,7 +29,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     let next_data: Value = match serde_json::from_str(&script.inner_html()) {
         Ok(data) => data,
         Err(e) => {
-            tracing::error!("Error parsing JSON data for book {}: {}", book, e);
+            tracing::error!(%book, "Failed to parse JSON data: {}", e);
             return Err(MetadataError::JsonParse(e));
         }
     };
@@ -40,7 +39,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     let book_info = match book_info(apollo_state) {
         Some(info) => info,
         None => {
-            tracing::error!("Missing book info for book: {}", book);
+            tracing::error!(%book, "Missing book info");
             return Err(MetadataError::MissingBookInfo);
         }
     };
@@ -50,14 +49,14 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
         .and_then(Value::as_str)
         .map(String::from)
         .ok_or_else(|| {
-            let error_msg = format!("Missing title for book: {}", book);
-            tracing::error!("{}", error_msg);
+            let error_msg = format!("Missing title");
+            tracing::error!(%book, "{}", error_msg);
             MetadataError::Other(error_msg)
         })?;
 
     let provider_id = extract_id(book_info).ok_or_else(|| {
-        let error_msg = format!("Missing provider_id for book: {}", book);
-        tracing::error!("{}", error_msg);
+        let error_msg = format!("Missing provider_id");
+        tracing::error!(%book, "{}", error_msg);
         MetadataError::Other(error_msg)
     })?;
 
@@ -102,6 +101,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     }
 
     tracing::info!("Successfully fetched metadata for book: {}", book);
+
     Ok(metadata)
 }
 

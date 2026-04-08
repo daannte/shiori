@@ -6,8 +6,7 @@ use tokio::{
 };
 
 pub async fn get_cover(path: &Path) -> io::Result<Vec<u8>> {
-    let bytes = fs::read(path).await?;
-    Ok(bytes)
+    fs::read(path).await
 }
 
 // TODO: Make an error type for this
@@ -24,12 +23,17 @@ pub async fn download_cover(
         .extension()
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase)
-        .ok_or("Expected file to have an extension")?;
+        .ok_or_else(|| {
+            tracing::error!(%url, "Expected file to have an extension");
+            "Expected file to have an extension"
+        })?;
 
     let path = covers_dir.join(format!("{media_id}.{ext}"));
 
     let mut file = File::create(&path).await?;
     file.write_all(&bytes).await?;
+
+    tracing::info!("Successfully saved cover to path: {}", path.display());
 
     Ok(path.to_string_lossy().to_string())
 }
