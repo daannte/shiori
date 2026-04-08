@@ -6,26 +6,65 @@ use crate::provider::{MetadataProvider, MetadataResult};
 use crate::{errors::MetadataError, goodreads::parsing::fetch_doc};
 
 pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
-    let document = fetch_doc(&format!("{}{}", super::GoodreadsProvider::BOOK_URL, book)).await?;
+    let url = format!("{}{}", super::GoodreadsProvider::BOOK_URL, book);
+
+    tracing::info!("Starting search for book with ID: {}", book);
+    let document = match fetch_doc(&url).await {
+        Ok(doc) => doc,
+        Err(e) => {
+            tracing::error!("Error fetching document for book {}: {}", book, e);
+            return Err(MetadataError::Network(e));
+        }
+    };
     let selector = scraper::Selector::parse("script#__NEXT_DATA__").unwrap();
 
-    let script = document
-        .select(&selector)
-        .next()
-        .ok_or_else(|| MetadataError::MissingTag("__NEXT_DATA__ script tag".to_string()))?;
+    let script = match document.select(&selector).next() {
+        Some(script) => script,
+        None => {
+            let error_msg = "__NEXT_DATA__ script tag not found";
+            tracing::error!("{}", error_msg);
+            return Err(MetadataError::MissingTag(error_msg.to_string()));
+        }
+    };
 
-    let next_data: Value = serde_json::from_str(&script.inner_html())?;
+    let next_data: Value = match serde_json::from_str(&script.inner_html()) {
+        Ok(data) => data,
+        Err(e) => {
+            tracing::error!("Error parsing JSON data for book {}: {}", book, e);
+            return Err(MetadataError::JsonParse(e));
+        }
+    };
 
     let apollo_state = &next_data["props"]["pageProps"]["apolloState"];
 
-    let book_info = book_info(apollo_state).ok_or_else(|| MetadataError::MissingBookInfo)?;
+    let book_info = match book_info(apollo_state) {
+        Some(info) => info,
+        None => {
+            tracing::error!("Missing book info for book: {}", book);
+            return Err(MetadataError::MissingBookInfo);
+        }
+    };
+
+    let title = book_info
+        .get("title")
+        .and_then(Value::as_str)
+        .map(String::from)
+        .ok_or_else(|| {
+            let error_msg = format!("Missing title for book: {}", book);
+            tracing::error!("{}", error_msg);
+            MetadataError::Other(error_msg)
+        })?;
+
+    let provider_id = extract_id(book_info).ok_or_else(|| {
+        let error_msg = format!("Missing provider_id for book: {}", book);
+        tracing::error!("{}", error_msg);
+        MetadataError::Other(error_msg)
+    })?;
+
+    tracing::info!("Successfully retrieved book information for book: {}", book);
 
     let mut metadata = EncodableMetadataSearch {
-        title: book_info
-            .get("title")
-            .and_then(Value::as_str)
-            .map(String::from)
-            .unwrap_or_default(),
+        title,
         authors: extract_author_names(apollo_state, book_info),
         cover_url: book_info
             .get("imageUrl")
@@ -36,7 +75,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
             .and_then(Value::as_str)
             .map(String::from),
         genres: extract_genres(book_info),
-        provider_id: extract_id(book_info),
+        provider_id,
         ..Default::default()
     };
 
@@ -64,6 +103,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
             .map(|datetime| datetime.date_naive())
     }
 
+    tracing::info!("Successfully fetched metadata for book: {}", book);
     Ok(metadata)
 }
 
@@ -78,15 +118,16 @@ fn book_info(apollo_state: &Value) -> Option<&Value> {
 
 /// Extract the goodreads id. Every book on goodreads should
 /// have a legacy id.
-fn extract_id(book_info: &Value) -> u32 {
+fn extract_id(book_info: &Value) -> Option<u32> {
     book_info
         .get("legacyId")
-        .and_then(|v| {
-            v.as_u64()
-                .and_then(|n| u32::try_from(n).ok())
-                .or_else(|| v.as_str()?.parse::<u32>().ok())
+        .and_then(|v| v.as_u64().and_then(|n| u32::try_from(n).ok()))
+        .or_else(|| {
+            book_info
+                .get("legacyId")
+                .and_then(Value::as_str)
+                .and_then(|s| s.parse::<u32>().ok())
         })
-        .expect("Is this a goodreads book?")
 }
 
 /// Return a list of genres

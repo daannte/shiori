@@ -2431,6 +2431,7 @@ dependencies = [
  "shiori_api_types",
  "shiori_database",
  "thiserror 2.0.18",
+ "tracing",
  "url",
 ]
 

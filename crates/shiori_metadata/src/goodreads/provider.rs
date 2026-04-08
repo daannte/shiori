@@ -20,7 +20,12 @@ impl MetadataProvider for GoodreadsProvider {
             .collect::<Vec<_>>()
             .await;
 
-        let books = results.into_iter().filter_map(Result::ok).collect();
+        let books = results
+            .into_iter()
+            .filter_map(Result::ok)
+            .collect::<Vec<_>>();
+
+        tracing::info!("Successfully fetched {} books", books.len());
 
         Ok(books)
     }
