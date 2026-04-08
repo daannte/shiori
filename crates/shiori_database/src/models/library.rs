@@ -31,7 +31,7 @@ impl Library {
 }
 
 /// Represents a new library record insertable to the `libraries` table.
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[diesel(table_name = libraries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewLibrary<'a> {

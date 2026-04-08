@@ -100,7 +100,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
             .map(|datetime| datetime.date_naive())
     }
 
-    tracing::info!("Successfully fetched metadata for book: {}", book);
+    tracing::info!(%book, "Successfully fetched metadata");
 
     Ok(metadata)
 }
