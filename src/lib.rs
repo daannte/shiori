@@ -1,6 +1,6 @@
 pub use routes::openapi::BaseOpenApi;
 
-mod config;
+pub mod config;
 pub mod errors;
 mod routes;
 
