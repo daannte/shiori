@@ -34,8 +34,15 @@
 			const res = await client.POST('/api/v1/libraries', {
 				body: { path: selectedPath, name }
 			});
-			if (!res.response.ok) throw new Error('Failed to create library');
-			goto(resolve('/'), { invalidate: ['libraries:create'] });
+			if (!res.response.ok || !res.data) throw new Error('Failed to create library');
+			goto(
+				resolve('/libraries/[library_id]/media', {
+					library_id: res.data.id.toString()
+				}),
+				{
+					invalidate: ['libraries:create']
+				}
+			);
 		} catch (error) {
 			console.error(error);
 		} finally {
