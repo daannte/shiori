@@ -4,7 +4,7 @@ use shiori_core::App;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::routes::api;
+use crate::routes::{api, koreader};
 
 #[derive(OpenApi)]
 #[openapi(info(title = "shiori", description = "TODO DESCRIPTION OF SHIORI",))]
@@ -19,6 +19,9 @@ impl BaseOpenApi {
     }
 
     pub fn build() -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
-        Self::router().merge(api::mount()).split_for_parts()
+        Self::router()
+            .merge(api::mount())
+            .merge(koreader::mount())
+            .split_for_parts()
     }
 }
