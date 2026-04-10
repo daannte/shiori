@@ -27,6 +27,17 @@ impl User {
         User::query().find(id).first(conn).await
     }
 
+    pub async fn find_by_username(
+        conn: &mut AsyncPgConnection,
+        username: &str,
+    ) -> QueryResult<Option<User>> {
+        User::query()
+            .filter(users::username.eq(username.to_lowercase()))
+            .first(conn)
+            .await
+            .optional()
+    }
+
     pub async fn count(conn: &mut AsyncPgConnection) -> QueryResult<i64> {
         users::table.count().get_result(conn).await
     }
