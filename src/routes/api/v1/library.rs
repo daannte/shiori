@@ -20,6 +20,7 @@ use crate::{
     config::state::AppState,
     errors::{APIError, APIResult},
     middleware::auth::auth_middleware,
+    routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
@@ -33,7 +34,10 @@ pub fn mount() -> OpenApiRouter<AppState> {
 #[utoipa::path(
     get,
     path = "/libraries",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("bearerAuth" = [])
+    ),
     responses(
         (status = 200, description = "Successfully fetched libraries", body = inline(Vec<EncodableLibrary>)),
         (status = 500, description = "Internal server error")
@@ -67,7 +71,10 @@ struct NewLibraryRequest {
 #[utoipa::path(
     post,
     path = "/libraries",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("bearerAuth" = [])
+    ),
     request_body = inline(NewLibraryRequest),
     responses(
         (status = 200, description = "Successfully created library", body = inline(EncodableLibrary)),
@@ -142,7 +149,10 @@ async fn create_library(
 #[utoipa::path(
     get,
     path = "/libraries/{id}/media",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("bearerAuth" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the library")
     ),
@@ -178,7 +188,10 @@ struct NewMediaRequest {
 #[utoipa::path(
     post,
     path = "/libraries/{id}/media",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("bearerAuth" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the library")
     ),

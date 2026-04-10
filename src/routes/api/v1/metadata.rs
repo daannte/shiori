@@ -1,4 +1,4 @@
-use axum::{Json, extract::Query};
+use axum::{Json, extract::Query, middleware};
 use serde::Deserialize;
 use shiori_api_types::EncodableMetadataSearch;
 use shiori_metadata::{
@@ -11,12 +11,15 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{APIError, APIResult},
+    middleware::auth::auth_middleware,
+    routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(search_books))
         .routes(routes!(get_book_metadata))
+        .layer(middleware::from_fn(auth_middleware))
 }
 
 /// Search for book metadata.
@@ -24,7 +27,10 @@ pub fn mount() -> OpenApiRouter<AppState> {
     get,
     path = "/metadata/book",
     params(ListQueryParams),
-    tag = "metadata",
+    tag = tags::METADATA,
+    security(
+        ("bearerAuth" = [])
+    ),
     responses(
         (status = 200, description = "Successfully found book metadata", body = inline(EncodableMetadataSearch)),
         (status = 400, description = "Invalid query parameters"),
@@ -59,7 +65,10 @@ struct ListQueryParams {
     get,
     path = "/metadata/search",
     params(BookQueryParams),
-    tag = "metadata",
+    tag = tags::METADATA,
+    security(
+        ("bearerAuth" = [])
+    ),
     responses(
         (status = 200, description = "Successfully found books", body=inline(Vec<EncodableMetadataSearch>)),
         (status = 400, description = "Invalid query parameters"),

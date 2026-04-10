@@ -1,8 +1,11 @@
-use axum::{Json, extract::State};
+use axum::{Json, extract::State, middleware};
 use serde::Deserialize;
 use shiori_api_types::{EncodableUser, LoginResponse};
 use shiori_jwt::JwtTokenPair;
-use utoipa_axum::{router::OpenApiRouter, routes};
+use utoipa_axum::{
+    router::{OpenApiRouter, UtoipaMethodRouterExt},
+    routes,
+};
 
 use shiori_database::models::{NewRefreshToken, NewUser, User};
 
@@ -10,6 +13,8 @@ use crate::{
     auth::{hash_password, verify_password},
     config::state::AppState,
     errors::{APIError, APIResult},
+    middleware::auth::auth_middleware,
+    routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
@@ -17,7 +22,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
         .routes(routes!(login))
         .routes(routes!(register))
         .routes(routes!(refresh_token))
-        .routes(routes!(logout))
+        .routes(routes!(logout).layer(middleware::from_fn(auth_middleware)))
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]
@@ -35,7 +40,7 @@ pub struct AuthRequest {
 #[utoipa::path(
     post,
     path = "/auth/login",
-    tag = "auth",
+    tag = tags::AUTH,
     request_body = inline(AuthRequest),
     responses(
         (status = 200, description = "Successfully logged in", body = inline(LoginResponse)),
@@ -53,7 +58,7 @@ async fn login(
         .await?
         .ok_or_else(|| APIError::Unauthorized)?;
 
-    // TODO: Maybe like lock account after 3 or 5 attempts?
+    // TODO: Maybe lock account after 3 or 5 attempts?
     let valid = verify_password(&user.hashed_password, &body.password)
         .map_err(|_| APIError::Unauthorized)?;
 
@@ -83,7 +88,7 @@ async fn login(
 #[utoipa::path(
     post,
     path = "/auth/register",
-    tag = "auth",
+    tag = tags::AUTH,
     request_body = inline(AuthRequest),
     responses(
         (status = 200, description = "Successfully registered", body = inline(EncodableUser)),
@@ -124,7 +129,7 @@ async fn register(
 #[utoipa::path(
     post,
     path = "/auth/refresh-token",
-    tag = "auth",
+    tag = tags::AUTH,
     responses(
         (status = 200, description = "Successfully refreshed JWT token"),
         (status = 500, description = "Internal server error")
@@ -136,7 +141,10 @@ async fn refresh_token() {}
 #[utoipa::path(
     post,
     path = "/auth/logout",
-    tag = "auth",
+    tag = tags::AUTH,
+    security(
+        ("bearerAuth" = [])
+    ),
     responses(
         (status = 200, description = "Successfully logged out"),
         (status = 500, description = "Internal server error")
