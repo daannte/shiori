@@ -71,7 +71,7 @@ async fn login(
         expires_at: tokens.refresh_token.expires_at,
     };
 
-    let _ = rt.insert(&mut conn).await?;
+    let _ = rt.insert(&conn).await?;
 
     Ok(Json(LoginResponse {
         tokens,
@@ -115,7 +115,7 @@ async fn register(
         is_server_owner,
     };
 
-    let user = new_user.insert(&mut conn).await?;
+    let user = new_user.insert(&conn).await?;
 
     Ok(Json(user.into()))
 }
