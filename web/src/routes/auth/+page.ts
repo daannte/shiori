@@ -4,35 +4,34 @@ import { error, redirect } from '@sveltejs/kit';
 import { loadUser } from '$lib/session.svelte';
 import { resolve } from '$app/paths';
 
-type MetaResponse =
-  operations['meta']['responses']['200']['content']['application/json'];
+type MetaResponse = operations['meta']['responses']['200']['content']['application/json'];
 
 export const load: PageLoad = async ({ fetch }) => {
-  const client = createClient({ fetch });
+	const client = createClient({ fetch });
 
-  const user = await loadUser(client);
+	const user = await loadUser(client);
 
-  if (user) {
-    redirect(303, resolve("/"))
-  }
+	if (user) {
+		redirect(303, resolve('/'));
+	}
 
-  const meta = await loadMeta(client);
+	const meta = await loadMeta(client);
 
-  return meta;
+	return meta;
 };
 
 function loadMetaError(status: number): never {
-  error(status, { message: 'Failed to load system metadata', tryAgain: true });
+	error(status, { message: 'Failed to load system metadata', tryAgain: true });
 }
 
 async function loadMeta(client: ReturnType<typeof createClient>): Promise<MetaResponse> {
-  const res = await client.GET('/api/v1/meta').catch(() => {
-    loadMetaError(504);
-  });
+	const res = await client.GET('/api/v1/meta').catch(() => {
+		loadMetaError(504);
+	});
 
-  if (res.error || !res.data) {
-    loadMetaError(res.response.status);
-  }
+	if (res.error || !res.data) {
+		loadMetaError(res.response.status);
+	}
 
-  return res.data;
+	return res.data;
 }

@@ -66,7 +66,7 @@
 											<Sidebar.MenuSubButton isActive={isActive(`/libraries/${library.id}/media`)}>
 												{#snippet child({ props })}
 													<a
-														href={resolve('/libraries/[library_id]/media', {
+														href={resolve('/(app)/libraries/[library_id]/media', {
 															library_id: library.id.toString()
 														})}
 														{...props}

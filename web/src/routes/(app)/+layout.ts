@@ -5,39 +5,39 @@ import { loadUser } from '$lib/session.svelte';
 import { resolve } from '$app/paths';
 
 type LibrariesResponse =
-  operations['list_libraries']['responses']['200']['content']['application/json'];
+	operations['list_libraries']['responses']['200']['content']['application/json'];
 
 export const load: LayoutLoad = async ({ fetch, depends }) => {
-  depends('libraries:create');
+	depends('libraries:create');
 
-  const client = createClient({ fetch });
+	const client = createClient({ fetch });
 
-  const user = await loadUser(client);
+	const user = await loadUser(client);
 
-  if (!user) {
-    redirect(303, resolve("/auth"))
-  }
+	if (!user) {
+		redirect(303, resolve('/auth'));
+	}
 
-  const libraries = await loadLibraries(client)
+	const libraries = await loadLibraries(client);
 
-  return {
-    user,
-    libraries
-  };
+	return {
+		user,
+		libraries
+	};
 };
 
 function loadLibrariesError(status: number): never {
-  error(status, { message: 'Failed to load libraries', tryAgain: true });
+	error(status, { message: 'Failed to load libraries', tryAgain: true });
 }
 
 async function loadLibraries(client: ReturnType<typeof createClient>): Promise<LibrariesResponse> {
-  const res = await client.GET('/api/v1/libraries').catch(() => {
-    loadLibrariesError(504);
-  });
+	const res = await client.GET('/api/v1/libraries').catch(() => {
+		loadLibrariesError(504);
+	});
 
-  if (res.error || !res.data) {
-    loadLibrariesError(res.response.status);
-  }
+	if (res.error || !res.data) {
+		loadLibrariesError(res.response.status);
+	}
 
-  return res.data;
+	return res.data;
 }
