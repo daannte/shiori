@@ -29,7 +29,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
     params(ListQueryParams),
     tag = tags::METADATA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     responses(
         (status = 200, description = "Successfully found book metadata", body = inline(EncodableMetadataSearch)),
@@ -67,7 +67,7 @@ struct ListQueryParams {
     params(BookQueryParams),
     tag = tags::METADATA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     responses(
         (status = 200, description = "Successfully found books", body=inline(Vec<EncodableMetadataSearch>)),

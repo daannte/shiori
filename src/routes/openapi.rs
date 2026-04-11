@@ -5,7 +5,7 @@ use utoipa::{
     Modify, OpenApi,
     openapi::{
         self,
-        security::{HttpBuilder, SecurityScheme},
+        security::{ApiKey, ApiKeyValue, SecurityScheme},
     },
 };
 use utoipa_axum::router::OpenApiRouter;
@@ -43,17 +43,11 @@ struct SecurityAddon;
 
 impl Modify for SecurityAddon {
     fn modify(&self, openapi: &mut openapi::OpenApi) {
-        if let Some(schema) = openapi.components.as_mut() {
-            schema.add_security_scheme(
-                "bearerAuth",
-                SecurityScheme::Http(
-                    HttpBuilder::new()
-                        .scheme(openapi::security::HttpAuthScheme::Bearer)
-                        .bearer_format("JWT")
-                        .build(),
-                ),
-            );
-        }
+        let components = openapi.components.get_or_insert_default();
+
+        let desc = "HttpOnly authentication cookie used to authorize user requests.";
+        let cookie = ApiKey::Cookie(ApiKeyValue::with_description("access_token", desc));
+        components.add_security_scheme("cookie", SecurityScheme::ApiKey(cookie));
     }
 }
 

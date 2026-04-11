@@ -36,7 +36,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
     path = "/media/{id}/cover",
     tag = tags::MEDIA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
@@ -72,7 +72,7 @@ async fn get_media_cover(
     path = "/media/{id}",
     tag = tags::MEDIA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
@@ -105,7 +105,7 @@ async fn get_media(
     path = "/media/{id}",
     tag = tags::MEDIA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
@@ -195,7 +195,7 @@ pub struct PatchRequest {
     path = "/media/{id}",
     tag = tags::MEDIA,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the media item")

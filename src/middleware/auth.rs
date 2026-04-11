@@ -1,25 +1,62 @@
-use axum::{extract::Request, http::header, middleware::Next, response::Response};
+use axum::{
+    extract::{FromRequestParts, Request},
+    middleware::Next,
+    response::Response,
+};
+use axum_extra::extract::CookieJar;
+use shiori_database::models::User;
 use shiori_jwt::AccessToken;
 
-use crate::errors::{APIError, APIResult};
+use crate::{
+    config::state::AppState,
+    errors::{APIError, APIResult},
+};
 
-pub async fn auth_middleware(req: Request, next: Next) -> APIResult<Response> {
-    let auth_header = req.headers().get(header::AUTHORIZATION);
-    let auth_header = match auth_header {
-        Some(header) => header.to_str().map_err(|_| APIError::Unauthorized)?,
-        None => return Err(APIError::Unauthorized),
-    };
+pub async fn auth_middleware(mut req: Request, next: Next) -> APIResult<Response> {
+    let jar = CookieJar::from_headers(req.headers());
 
-    let (scheme, token) = auth_header.split_once(' ').ok_or(APIError::Unauthorized)?;
-    if !scheme.eq_ignore_ascii_case("bearer") {
-        return Err(APIError::Unauthorized);
+    if let Some(cookie) = jar.get("access_token") {
+        let user_id_str =
+            AccessToken::decode(cookie.value()).map_err(|_| APIError::Unauthorized)?;
+
+        let user_id = user_id_str
+            .parse::<i32>()
+            .map_err(|_| APIError::Unauthorized)?;
+
+        req.extensions_mut().insert(AuthContext::UserId(user_id));
+        return Ok(next.run(req).await);
     }
 
-    // I dont need the whole user for now
-    let _user_id = AccessToken::decode(token).map_err(|e| {
-        tracing::error!("Failed to decode JWT: {:?}", e);
-        APIError::Unauthorized
-    })?;
+    Err(APIError::Unauthorized)
+}
 
-    Ok(next.run(req).await)
+#[derive(Clone)]
+pub enum AuthContext {
+    UserId(i32),
+}
+
+pub struct CurrentUser(pub User);
+
+impl FromRequestParts<AppState> for CurrentUser {
+    type Rejection = APIError;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let auth = parts
+            .extensions
+            .get::<AuthContext>()
+            .ok_or(APIError::Unauthorized)?;
+
+        let user_id = match auth {
+            AuthContext::UserId(id) => *id,
+        };
+
+        let mut conn = state.db().await?;
+
+        let user = User::find(&mut conn, user_id).await?;
+
+        Ok(CurrentUser(user))
+    }
 }

@@ -3,10 +3,7 @@ use axum_extra::extract::CookieJar;
 use serde::Deserialize;
 use shiori_api_types::EncodableUser;
 use shiori_jwt::JwtTokenPair;
-use utoipa_axum::{
-    router::{OpenApiRouter, UtoipaMethodRouterExt},
-    routes,
-};
+use utoipa_axum::{router::OpenApiRouter, routes};
 
 use shiori_database::models::{NewRefreshToken, NewUser, User};
 
@@ -14,16 +11,26 @@ use crate::{
     auth::{hash_password, verify_password},
     config::state::AppState,
     errors::{APIError, APIResult},
-    middleware::auth::auth_middleware,
+    middleware::auth::{CurrentUser, auth_middleware},
     routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
+    public().merge(private())
+}
+
+fn public() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(login))
         .routes(routes!(register))
         .routes(routes!(refresh_token))
-        .routes(routes!(logout).layer(middleware::from_fn(auth_middleware)))
+}
+
+fn private() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(logout))
+        .routes(routes!(me))
+        .layer(middleware::from_fn(auth_middleware))
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]
@@ -150,7 +157,7 @@ async fn refresh_token() {}
     path = "/auth/logout",
     tag = tags::AUTH,
     security(
-        ("bearerAuth" = [])
+        ("cookie" = [])
     ),
     responses(
         (status = 200, description = "Successfully logged out"),
@@ -158,3 +165,21 @@ async fn refresh_token() {}
     )
 )]
 async fn logout() {}
+
+/// Currently authenticated user
+#[utoipa::path(
+    post,
+    path = "/auth/me",
+    tag = tags::AUTH,
+    security(
+        ("cookie" = [])
+    ),
+    responses(
+        (status = 200, description = "Successfully retrieved current user", body = inline(EncodableUser)),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error")
+    )
+)]
+async fn me(CurrentUser(user): CurrentUser) -> APIResult<Json<EncodableUser>> {
+    Ok(Json(EncodableUser::from(user)))
+}
