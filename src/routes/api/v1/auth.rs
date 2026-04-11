@@ -1,8 +1,9 @@
-use axum::{Json, extract::State, middleware, response::IntoResponse};
+use axum::{Json, extract::State, http::StatusCode, middleware, response::IntoResponse};
 use axum_extra::extract::CookieJar;
 use serde::Deserialize;
 use shiori_api_types::EncodableUser;
-use shiori_jwt::JwtTokenPair;
+use shiori_database::models::RefreshToken as RefreshModel;
+use shiori_jwt::{JwtTokenPair, RefreshToken};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use shiori_database::models::{NewRefreshToken, NewUser, User};
@@ -144,12 +145,62 @@ async fn register(
     post,
     path = "/auth/refresh-token",
     tag = tags::AUTH,
+    params(
+        ("refresh_token" = String, Cookie, description = "Refresh token")
+    ),
     responses(
-        (status = 200, description = "Successfully refreshed JWT token"),
+        (status = 204, description = "Successfully refreshed JWT token", headers(
+                ("set-cookie" = String, description = "Sets access_token and refresh_token HttpOnly cookies")
+            )
+        ),
+        (status = 401, description = "Unauthorized"),
         (status = 500, description = "Internal server error")
     )
 )]
-async fn refresh_token() {}
+async fn refresh_token(
+    State(app): State<AppState>,
+    jar: CookieJar,
+) -> APIResult<(StatusCode, CookieJar)> {
+    let mut conn = app.db().await?;
+    let cookie = jar
+        .get("refresh_token")
+        .ok_or_else(|| APIError::Unauthorized)?;
+
+    let (user_id_str, jti) =
+        RefreshToken::decode(cookie.value()).map_err(|_| APIError::Unauthorized)?;
+
+    let user_id = user_id_str
+        .parse::<i32>()
+        .map_err(|_| APIError::Unauthorized)?;
+
+    let token = RefreshModel::find(&mut conn, &jti)
+        .await
+        .map_err(|_| APIError::Unauthorized)?;
+
+    if token.revoked_at.is_some() || token.user_id != user_id {
+        return Err(APIError::Unauthorized);
+    }
+
+    RefreshModel::revoke(&mut conn, &jti).await?;
+
+    let tokens = JwtTokenPair::new(user_id).map_err(|_| {
+        APIError::InternalServerError("Failed to generate authentication tokens".to_string())
+    })?;
+
+    let rt = NewRefreshToken {
+        jti: &tokens.refresh_token.jti,
+        user_id,
+        expires_at: tokens.refresh_token.expires_at,
+    };
+
+    rt.insert(&conn).await?;
+
+    let jar = jar
+        .add(tokens.access_token.to_cookie())
+        .add(tokens.refresh_token.to_cookie());
+
+    Ok((StatusCode::NO_CONTENT, jar))
+}
 
 /// Logout
 #[utoipa::path(

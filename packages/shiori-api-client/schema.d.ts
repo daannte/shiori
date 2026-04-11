@@ -521,12 +521,24 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie: {
+                /** @description Refresh token */
+                refresh_token: string;
+            };
         };
         requestBody?: never;
         responses: {
             /** @description Successfully refreshed JWT token */
-            200: {
+            204: {
+                headers: {
+                    /** @description Sets access_token and refresh_token HttpOnly cookies */
+                    "set-cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

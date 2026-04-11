@@ -215,9 +215,31 @@ expression: newest.to_pretty_json().unwrap()
         ],
         "summary": "Refresh JWT token",
         "operationId": "refresh_token",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "cookie",
+            "description": "Refresh token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "Successfully refreshed JWT token"
+          "204": {
+            "description": "Successfully refreshed JWT token",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Sets access_token and refresh_token HttpOnly cookies"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "500": {
             "description": "Internal server error"
