@@ -1,3 +1,4 @@
+use axum_extra::extract::cookie::Cookie;
 use base64::{Engine, engine::general_purpose};
 use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
@@ -98,6 +99,18 @@ impl AccessToken {
 
         Ok(data.claims.sub)
     }
+
+    pub fn to_cookie(self) -> Cookie<'static> {
+        let offset =
+            time::OffsetDateTime::from_unix_timestamp(self.expires_at.timestamp()).unwrap();
+
+        Cookie::build(("access_token", self.token))
+            .path("/")
+            .secure(cfg!(not(debug_assertions)))
+            .http_only(true)
+            .expires(offset)
+            .build()
+    }
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
@@ -137,6 +150,18 @@ impl RefreshToken {
             jti,
             expires_at: times.exp_dt,
         })
+    }
+
+    pub fn to_cookie(self) -> Cookie<'static> {
+        let offset =
+            time::OffsetDateTime::from_unix_timestamp(self.expires_at.timestamp()).unwrap();
+
+        Cookie::build(("refresh_token", self.token))
+            .path("/")
+            .secure(cfg!(not(debug_assertions)))
+            .http_only(true)
+            .expires(offset)
+            .build()
     }
 }
 

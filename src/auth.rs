@@ -1,6 +1,6 @@
 use argon2::{
-    Argon2, PasswordHash,
     password_hash::{PasswordHasher, PasswordVerifier},
+    Argon2, PasswordHash,
 };
 
 use crate::errors::AuthError;

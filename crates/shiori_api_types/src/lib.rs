@@ -1,7 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use shiori_database::models::{Library, Media, MediaMetadata, User};
-use shiori_jwt::JwtTokenPair;
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = Library)]
@@ -225,12 +224,4 @@ pub struct EncodableDirectories {
     /// Immediate subdirectories of the given path.
     #[schema(examples("light_novels"))]
     pub directories: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, utoipa::ToSchema)]
-pub struct LoginResponse {
-    /// Pair of JWT tokens issued for the session.
-    pub tokens: JwtTokenPair,
-    /// Authenticated user information.
-    pub user: EncodableUser,
 }

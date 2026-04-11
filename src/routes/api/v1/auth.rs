@@ -1,6 +1,7 @@
-use axum::{Json, extract::State, middleware};
+use axum::{Json, extract::State, middleware, response::IntoResponse};
+use axum_extra::extract::CookieJar;
 use serde::Deserialize;
-use shiori_api_types::{EncodableUser, LoginResponse};
+use shiori_api_types::EncodableUser;
 use shiori_jwt::JwtTokenPair;
 use utoipa_axum::{
     router::{OpenApiRouter, UtoipaMethodRouterExt},
@@ -43,15 +44,20 @@ pub struct AuthRequest {
     tag = tags::AUTH,
     request_body = inline(AuthRequest),
     responses(
-        (status = 200, description = "Successfully logged in", body = inline(LoginResponse)),
+        (status = 200, description = "Successfully logged in", body = inline(EncodableUser),
+            headers(
+                ("set-cookie" = String, description = "Sets access_token and refresh_token HttpOnly cookies")
+            )
+        ),
         (status = 401, description = "Unauthorized"),
         (status = 500, description = "Internal server error")
     )
 )]
 async fn login(
     State(app): State<AppState>,
+    jar: CookieJar,
     Json(body): Json<AuthRequest>,
-) -> APIResult<Json<LoginResponse>> {
+) -> APIResult<impl IntoResponse> {
     let mut conn = app.db().await?;
 
     let user = User::find_by_username(&mut conn, &body.username)
@@ -76,12 +82,13 @@ async fn login(
         expires_at: tokens.refresh_token.expires_at,
     };
 
-    let _ = rt.insert(&conn).await?;
+    rt.insert(&conn).await?;
 
-    Ok(Json(LoginResponse {
-        tokens,
-        user: user.into(),
-    }))
+    let jar = jar
+        .add(tokens.access_token.to_cookie())
+        .add(tokens.refresh_token.to_cookie());
+
+    Ok((jar, Json(EncodableUser::from(user))))
 }
 
 /// Register

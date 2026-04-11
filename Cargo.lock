@@ -160,6 +160,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-extra"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fef252edff26ddba56bbcdf2ee3307b8129acb86f5749b68990c168a6fcc9c76"
+dependencies = [
+ "axum",
+ "axum-core",
+ "bytes",
+ "cookie",
+ "futures-core",
+ "futures-util",
+ "http",
+ "http-body",
+ "http-body-util",
+ "mime",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "axum_typed_multipart"
 version = "0.16.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -417,6 +439,17 @@ name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
+
+[[package]]
+name = "cookie"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ddef33a339a91ea89fb53151bd0a4689cfce27055c291dfa69945475d22c747"
+dependencies = [
+ "percent-encoding",
+ "time",
+ "version_check",
+]
 
 [[package]]
 name = "core-foundation"
@@ -2922,6 +2955,7 @@ version = "0.0.0"
 dependencies = [
  "argon2",
  "axum",
+ "axum-extra",
  "axum_typed_multipart",
  "chrono",
  "deadpool-diesel",
@@ -2954,7 +2988,6 @@ dependencies = [
  "serde",
  "serde_json",
  "shiori_database",
- "shiori_jwt",
  "utoipa",
 ]
 
@@ -2997,12 +3030,14 @@ dependencies = [
 name = "shiori_jwt"
 version = "0.0.0"
 dependencies = [
+ "axum-extra",
  "base64",
  "chrono",
  "jsonwebtoken",
  "once_cell",
  "rand 0.10.0",
  "serde",
+ "time",
  "utoipa",
  "uuid",
 ]
