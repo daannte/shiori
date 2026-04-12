@@ -101,28 +101,11 @@ impl AccessToken {
     }
 
     pub fn to_cookie(self) -> Cookie<'static> {
-        let offset =
-            time::OffsetDateTime::from_unix_timestamp(self.expires_at.timestamp()).unwrap();
-
-        Cookie::build(("access_token", self.token))
-            .path("/")
-            .secure(cfg!(not(debug_assertions)))
-            .http_only(true)
-            .expires(offset)
-            .same_site(SameSite::Lax)
-            .build()
+        create_cookie("access_token", self.token, self.expires_at)
     }
 
     pub fn remove_cookie() -> Cookie<'static> {
-        let offset = time::OffsetDateTime::from_unix_timestamp(0).unwrap();
-
-        Cookie::build(("access_token", ""))
-            .path("/")
-            .secure(cfg!(not(debug_assertions)))
-            .http_only(true)
-            .expires(offset)
-            .same_site(SameSite::Lax)
-            .build()
+        create_cookie("access_token", String::new(), Utc::now())
     }
 }
 
@@ -177,28 +160,11 @@ impl RefreshToken {
     }
 
     pub fn to_cookie(self) -> Cookie<'static> {
-        let offset =
-            time::OffsetDateTime::from_unix_timestamp(self.expires_at.timestamp()).unwrap();
-
-        Cookie::build(("refresh_token", self.token))
-            .path("/")
-            .secure(cfg!(not(debug_assertions)))
-            .http_only(true)
-            .expires(offset)
-            .same_site(SameSite::Lax)
-            .build()
+        create_cookie("refresh_token", self.token, self.expires_at)
     }
 
     pub fn remove_cookie() -> Cookie<'static> {
-        let offset = time::OffsetDateTime::from_unix_timestamp(0).unwrap();
-
-        Cookie::build(("refresh_token", ""))
-            .path("/")
-            .secure(cfg!(not(debug_assertions)))
-            .http_only(true)
-            .expires(offset)
-            .same_site(SameSite::Lax)
-            .build()
+        create_cookie("refresh_token", String::new(), Utc::now())
     }
 }
 
@@ -226,4 +192,15 @@ impl JwtTimes {
             exp_dt,
         }
     }
+}
+
+fn create_cookie(name: &str, value: String, expires_at: DateTime<Utc>) -> Cookie<'static> {
+    let offset = time::OffsetDateTime::from_unix_timestamp(expires_at.timestamp()).unwrap();
+    Cookie::build((name.to_string(), value))
+        .path("/")
+        .secure(cfg!(not(debug_assertions)))
+        .http_only(true)
+        .expires(offset)
+        .same_site(SameSite::Lax)
+        .build()
 }
