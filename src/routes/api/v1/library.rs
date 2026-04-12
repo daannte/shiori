@@ -6,6 +6,7 @@ use tokio::fs;
 use axum::{
     Json,
     extract::{Path, State},
+    http::StatusCode,
     middleware,
 };
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
@@ -18,7 +19,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     config::state::AppState,
-    errors::{APIError, APIResult},
+    errors::{AppResult, bad_request, custom},
     middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
@@ -43,7 +44,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
         (status = 500, description = "Internal server error")
     )
 )]
-async fn list_libraries(State(app): State<AppState>) -> APIResult<Json<Vec<EncodableLibrary>>> {
+async fn list_libraries(State(app): State<AppState>) -> AppResult<Json<Vec<EncodableLibrary>>> {
     let mut conn = app.db().await?;
 
     let libraries = Library::all(&mut conn)
@@ -85,23 +86,22 @@ struct NewLibraryRequest {
 async fn create_library(
     State(app): State<AppState>,
     Json(body): Json<NewLibraryRequest>,
-) -> APIResult<Json<EncodableLibrary>> {
+) -> AppResult<Json<EncodableLibrary>> {
     if path::Path::new(&body.path).is_absolute() {
-        return Err(APIError::BadRequest(
-            "Absolute paths not allowed".to_string(),
-        ));
+        return Err(bad_request("Absolute paths not allowed"));
     }
 
     let new_path = app.base_path.join(body.path).canonicalize()?;
 
     if !new_path.starts_with(&app.base_path) {
-        return Err(APIError::Forbidden(
-            "Access to the requested path is not allowed".to_string(),
+        return Err(custom(
+            StatusCode::FORBIDDEN,
+            "Access to the requested path is not allowed",
         ));
     }
 
     if !new_path.is_dir() {
-        return Err(APIError::BadRequest("Path must be a directory".to_string()));
+        return Err(bad_request("Path must be a directory"));
     }
 
     let mut conn = app.db().await?;
@@ -113,7 +113,7 @@ async fn create_library(
         let lib_path = path::Path::new(&lib.path);
 
         if new_path.starts_with(lib_path) {
-            return Err(APIError::BadRequest(format!(
+            return Err(bad_request(format!(
                 "Library path '{}' is inside existing library '{}'",
                 new_path.display(),
                 lib.path
@@ -121,7 +121,7 @@ async fn create_library(
         }
 
         if lib_path.starts_with(&new_path) {
-            return Err(APIError::BadRequest(format!(
+            return Err(bad_request(format!(
                 "Library path '{}' contains existing library '{}'",
                 new_path.display(),
                 lib.path
@@ -131,7 +131,7 @@ async fn create_library(
 
     let path_str = new_path
         .to_str()
-        .ok_or_else(|| APIError::BadRequest("Path contains invalid UTF-8".to_string()))?;
+        .ok_or_else(|| bad_request("Path contains invalid UTF-8"))?;
 
     let new_library = NewLibrary {
         name: &body.name,
@@ -165,7 +165,7 @@ async fn create_library(
 async fn list_library_media(
     Path(library_id): Path<i32>,
     State(app): State<AppState>,
-) -> APIResult<Json<Vec<EncodableMedia>>> {
+) -> AppResult<Json<Vec<EncodableMedia>>> {
     let mut conn = app.db().await?;
 
     let media = Media::find_by_library_id(&mut conn, library_id)
@@ -210,7 +210,7 @@ async fn create_library_media(
     Path(library_id): Path<i32>,
     State(app): State<AppState>,
     TypedMultipart(body): TypedMultipart<NewMediaRequest>,
-) -> APIResult<Json<Vec<EncodableMedia>>> {
+) -> AppResult<Json<Vec<EncodableMedia>>> {
     // TODO:
     // - Refactor this func
     // - Keep running even if some files fail
@@ -225,7 +225,7 @@ async fn create_library_media(
             .metadata
             .file_name
             .as_deref()
-            .ok_or_else(|| APIError::BadRequest("Media must have a filename.".to_string()))?;
+            .ok_or_else(|| bad_request("Media must have a filename.".to_string()))?;
 
         let path = path::Path::new(file_name);
 
@@ -235,14 +235,12 @@ async fn create_library_media(
             .extension()
             .and_then(OsStr::to_str)
             .map(str::to_ascii_lowercase)
-            .ok_or_else(|| APIError::BadRequest("Media must have an extension.".to_string()))?;
+            .ok_or_else(|| bad_request("Media must have an extension.".to_string()))?;
 
         let media_path = path::Path::new(&library.path).join(file_name);
 
         if fs::metadata(&media_path).await.is_ok() {
-            return Err(APIError::BadRequest(
-                "Media already exists in library".to_string(),
-            ));
+            return Err(bad_request("Media already exists in library".to_string()));
         }
 
         let new_media = NewMedia {

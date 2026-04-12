@@ -3,7 +3,7 @@ use shiori_api_types::EncodableMeta;
 use shiori_database::models::User;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{config::state::AppState, errors::APIResult, routes::openapi::tags};
+use crate::{config::state::AppState, errors::AppResult, routes::openapi::tags};
 
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().routes(routes!(meta))
@@ -19,7 +19,7 @@ pub fn mount() -> OpenApiRouter<AppState> {
         (status = 500, description = "Internal server error")
     )
 )]
-async fn meta(State(app): State<AppState>) -> APIResult<Json<EncodableMeta>> {
+async fn meta(State(app): State<AppState>) -> AppResult<Json<EncodableMeta>> {
     let mut conn = app.db().await?;
     let initialized = User::count(&mut conn).await? > 0;
 

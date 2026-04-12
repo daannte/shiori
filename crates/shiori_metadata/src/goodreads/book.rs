@@ -3,7 +3,7 @@ use serde_json::Value;
 use shiori_api_types::EncodableMetadataSearch;
 
 use crate::provider::{MetadataProvider, MetadataResult};
-use crate::{errors::MetadataError, goodreads::parsing::fetch_doc};
+use crate::{MetadataError, goodreads::parsing::fetch_doc};
 
 pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
     let url = format!("{}{}", super::GoodreadsProvider::BOOK_URL, book);

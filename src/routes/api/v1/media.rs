@@ -18,7 +18,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     config::state::AppState,
-    errors::{APIError, APIResult},
+    errors::{AppResult, not_found},
     middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
@@ -50,18 +50,14 @@ pub fn mount() -> OpenApiRouter<AppState> {
 async fn get_media_cover(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
-) -> APIResult<Vec<u8>> {
+) -> AppResult<Vec<u8>> {
     let mut conn = app.db().await?;
 
     let media = Media::find(&mut conn, media_id).await?;
 
-    let path = media
-        .cover_path
-        .ok_or_else(|| APIError::NotFound("Media does not have a cover".to_string()))?;
+    let path = media.cover_path.ok_or_else(|| not_found())?;
 
-    let data = get_cover(path::Path::new(&path))
-        .await
-        .map_err(|_| APIError::InternalServerError("Failed to get cover".to_string()))?;
+    let data = get_cover(path::Path::new(&path)).await?;
 
     Ok(data)
 }
@@ -86,7 +82,7 @@ async fn get_media_cover(
 async fn get_media(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
-) -> APIResult<Json<EncodableMediaWithMetadata>> {
+) -> AppResult<Json<EncodableMediaWithMetadata>> {
     let mut conn = app.db().await?;
 
     let (media, metadata) = Media::with_metadata(&mut conn, media_id).await?;
@@ -116,7 +112,7 @@ async fn get_media(
         (status = 500, description = "Internal server error")
     )
 )]
-async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) -> APIResult<()> {
+async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) -> AppResult<()> {
     let mut conn = app.db().await?;
 
     let media = Media::delete(&mut conn, media_id).await?;
@@ -211,13 +207,11 @@ async fn patch_media(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
     Json(body): Json<PatchRequest>,
-) -> APIResult<Json<EncodableMediaWithMetadata>> {
+) -> AppResult<Json<EncodableMediaWithMetadata>> {
     let mut conn = app.db().await?;
 
     let downloaded_cover = if let Some(cover_url) = &body.cover_url {
-        let new_cover_path = download_cover(cover_url, &app.base_path, &media_id)
-            .await
-            .map_err(|_| APIError::InternalServerError("Failed to download cover".to_string()))?;
+        let new_cover_path = download_cover(cover_url, &app.base_path, &media_id).await?;
 
         Some(new_cover_path)
     } else {

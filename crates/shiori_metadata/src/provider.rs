@@ -1,9 +1,7 @@
 use shiori_api_types::EncodableMetadataSearch;
 use url::form_urlencoded;
 
-use crate::errors::MetadataError;
-
-pub type MetadataResult<T> = Result<T, MetadataError>;
+pub type MetadataResult<T> = Result<T, crate::MetadataError>;
 
 #[allow(async_fn_in_trait)]
 pub trait MetadataProvider {

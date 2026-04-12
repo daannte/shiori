@@ -11,7 +11,7 @@ use shiori_database::models::{NewRefreshToken, NewUser, User};
 use crate::{
     auth::{hash_password, verify_password},
     config::state::AppState,
-    errors::{APIError, APIResult},
+    errors::{AppResult, bad_request, server_error, unauthorized},
     middleware::auth::{CurrentUser, auth_middleware},
     routes::openapi::tags,
 };
@@ -65,24 +65,20 @@ async fn login(
     State(app): State<AppState>,
     jar: CookieJar,
     Json(body): Json<AuthRequest>,
-) -> APIResult<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let mut conn = app.db().await?;
 
-    let user = User::find_by_username(&mut conn, &body.username)
-        .await?
-        .ok_or_else(|| APIError::Unauthorized)?;
+    let user = User::find_by_username(&mut conn, &body.username).await?;
 
     // TODO: Maybe lock account after 3 or 5 attempts?
-    let valid = verify_password(&user.hashed_password, &body.password)
-        .map_err(|_| APIError::Unauthorized)?;
+    let valid = verify_password(&user.hashed_password, &body.password);
 
     if !valid {
-        return Err(APIError::Unauthorized);
+        return Err(unauthorized("Invalid credentials"));
     }
 
-    let tokens = JwtTokenPair::new(user.id).map_err(|_| {
-        APIError::InternalServerError("Failed to generate authentication tokens".to_string())
-    })?;
+    let tokens =
+        JwtTokenPair::new(user.id).map_err(|_| server_error("Error during authentication"))?;
 
     let rt = NewRefreshToken {
         jti: &tokens.refresh_token.jti,
@@ -115,16 +111,14 @@ async fn login(
 async fn register(
     State(app): State<AppState>,
     Json(body): Json<AuthRequest>,
-) -> APIResult<Json<EncodableUser>> {
+) -> AppResult<Json<EncodableUser>> {
     let mut conn = app.db().await?;
 
     let has_users = User::count(&mut conn).await? > 0;
     let is_server_owner = !has_users;
 
     if body.password.len() < 8 {
-        return Err(APIError::BadRequest(
-            "Password must be at least 8 characters".to_string(),
-        ));
+        return Err(bad_request("Password must be at least 8 characters"));
     }
 
     let hash = hash_password(&body.password)?;
@@ -160,32 +154,28 @@ async fn register(
 async fn refresh_token(
     State(app): State<AppState>,
     jar: CookieJar,
-) -> APIResult<(StatusCode, CookieJar)> {
+) -> AppResult<(StatusCode, CookieJar)> {
     let mut conn = app.db().await?;
     let cookie = jar
         .get("refresh_token")
-        .ok_or_else(|| APIError::Unauthorized)?;
+        .ok_or_else(|| bad_request("missing refresh token"))?;
 
     let (user_id_str, jti) =
-        RefreshToken::decode(cookie.value()).map_err(|_| APIError::Unauthorized)?;
+        RefreshToken::decode(cookie.value()).map_err(|_| unauthorized("invalid refresh token"))?;
 
     let user_id = user_id_str
         .parse::<i32>()
-        .map_err(|_| APIError::Unauthorized)?;
+        .map_err(|_| unauthorized("invalid refresh token"))?;
 
-    let token = RefreshModel::find(&mut conn, &jti)
-        .await
-        .map_err(|_| APIError::Unauthorized)?;
+    let token = RefreshModel::find(&mut conn, &jti).await?;
 
     if token.revoked_at.is_some() || token.user_id != user_id {
-        return Err(APIError::Unauthorized);
+        return Err(unauthorized("invalid refresh token"));
     }
 
     RefreshModel::revoke(&mut conn, &jti).await?;
 
-    let tokens = JwtTokenPair::new(user_id).map_err(|_| {
-        APIError::InternalServerError("Failed to generate authentication tokens".to_string())
-    })?;
+    let tokens = JwtTokenPair::new(user_id).map_err(|_| server_error("internal server error"))?;
 
     let rt = NewRefreshToken {
         jti: &tokens.refresh_token.jti,
@@ -219,14 +209,15 @@ async fn refresh_token(
         (status = 500, description = "Internal server error")
     )
 )]
-async fn logout(State(app): State<AppState>, jar: CookieJar) -> APIResult<(StatusCode, CookieJar)> {
+async fn logout(State(app): State<AppState>, jar: CookieJar) -> AppResult<(StatusCode, CookieJar)> {
     let mut conn = app.db().await?;
 
     let cookie = jar
         .get("refresh_token")
-        .ok_or_else(|| APIError::Unauthorized)?;
+        .ok_or_else(|| bad_request("missing refresh token"))?;
 
-    let (_, jti) = RefreshToken::decode(cookie.value()).map_err(|_| APIError::Unauthorized)?;
+    let (_, jti) =
+        RefreshToken::decode(cookie.value()).map_err(|_| unauthorized("invalid refresh token"))?;
 
     RefreshModel::revoke(&mut conn, &jti).await?;
 
@@ -251,6 +242,6 @@ async fn logout(State(app): State<AppState>, jar: CookieJar) -> APIResult<(Statu
         (status = 500, description = "Internal server error")
     )
 )]
-async fn me(CurrentUser(user): CurrentUser) -> APIResult<Json<EncodableUser>> {
+async fn me(CurrentUser(user): CurrentUser) -> AppResult<Json<EncodableUser>> {
     Ok(Json(EncodableUser::from(user)))
 }

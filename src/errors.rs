@@ -1,137 +1,195 @@
+// https://github.com/rust-lang/crates.io/blob/main/src/util/errors.rs
+
+use std::{borrow::Cow, error::Error, fmt};
+
 use axum::{
-    Json,
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use axum_extra::json;
+use diesel::result::Error as DieselError;
+use shiori_filesystem::FilesystemError;
 use shiori_metadata::MetadataError;
-use thiserror::Error;
 
-pub type APIResult<T> = Result<T, APIError>;
+pub type BoxedAppError = Box<dyn AppError>;
 
-#[derive(Debug, Error)]
-pub enum AuthError {
-    #[error("Authentication error")]
-    Argon2Error,
+pub fn bad_request<S: ToString>(error: S) -> BoxedAppError {
+    custom(StatusCode::BAD_REQUEST, error.to_string())
 }
 
-#[derive(Debug, Error)]
-pub enum APIError {
-    #[error("{0}")]
-    InternalServerError(String),
-    #[error("This has not been implemented yet")]
-    NotImplemented,
-    #[error("{0}")]
-    BadRequest(String),
-    #[error("{0}")]
-    Forbidden(String),
-    #[error("Unauthorized")]
-    Unauthorized,
-    #[error("{0}")]
-    NotFound(String),
-    #[error("{0}")]
-    DbError(#[from] diesel::result::Error),
+pub fn server_error<S: ToString>(error: S) -> BoxedAppError {
+    custom(StatusCode::INTERNAL_SERVER_ERROR, error.to_string())
 }
 
-impl APIError {
-    pub fn status_code(&self) -> StatusCode {
-        match self {
-            APIError::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            APIError::NotImplemented => StatusCode::NOT_IMPLEMENTED,
-            APIError::BadRequest(_) => StatusCode::BAD_REQUEST,
-            APIError::Forbidden(_) => StatusCode::FORBIDDEN,
-            APIError::Unauthorized => StatusCode::UNAUTHORIZED,
-            APIError::NotFound(_) => StatusCode::NOT_FOUND,
-            APIError::DbError(diesel::result::Error::NotFound) => StatusCode::NOT_FOUND,
-            _ => StatusCode::INTERNAL_SERVER_ERROR,
-        }
+pub fn unauthorized<S: ToString>(error: S) -> BoxedAppError {
+    custom(StatusCode::UNAUTHORIZED, error.to_string())
+}
+
+pub fn not_found() -> BoxedAppError {
+    custom(StatusCode::NOT_FOUND, "Not Found")
+}
+
+pub fn service_unavailable() -> BoxedAppError {
+    custom(StatusCode::SERVICE_UNAVAILABLE, "Service unavailable")
+}
+
+// =============================================================================
+// AppError trait
+
+pub trait AppError: Send + fmt::Display + fmt::Debug + 'static {
+    fn response(&self) -> axum::response::Response;
+}
+
+impl AppError for BoxedAppError {
+    fn response(&self) -> axum::response::Response {
+        (**self).response()
     }
 }
 
-impl From<AuthError> for APIError {
-    fn from(error: AuthError) -> Self {
-        match error {
-            AuthError::Argon2Error => {
-                APIError::InternalServerError("Internal server error".to_string())
-            }
-        }
+impl IntoResponse for BoxedAppError {
+    fn into_response(self) -> Response {
+        self.response()
     }
 }
 
-impl From<MetadataError> for APIError {
-    fn from(error: MetadataError) -> Self {
-        match error {
-            MetadataError::Network(_) => {
-                APIError::InternalServerError("Network error contacting provider".into())
-            }
+pub type AppResult<T> = Result<T, BoxedAppError>;
 
-            MetadataError::HtmlParse => {
-                APIError::InternalServerError("Failed to parse HTML from provider".into())
-            }
+// =============================================================================
+// JSON custom message
 
-            MetadataError::MissingTag(_) => {
-                APIError::InternalServerError("Provider response missing expected tag".into())
-            }
-
-            MetadataError::JsonParse(_) => {
-                APIError::InternalServerError("Failed to parse JSON from provider".into())
-            }
-
-            MetadataError::MissingBookInfo => {
-                APIError::InternalServerError("Book info not found in provider data".into())
-            }
-
-            MetadataError::Other(msg) => APIError::InternalServerError(msg),
-        }
-    }
+pub fn custom(status: StatusCode, detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
+    Box::new(CustomApiError {
+        status,
+        detail: detail.into(),
+    })
 }
 
-impl From<diesel_async::pooled_connection::deadpool::PoolError> for APIError {
-    fn from(error: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
-        APIError::InternalServerError(error.to_string())
-    }
+fn json_error(status: StatusCode, detail: &str) -> Response {
+    let json = json!({
+        "error": detail,
+    });
+    (status, json).into_response()
 }
 
-impl From<std::io::Error> for APIError {
-    fn from(error: std::io::Error) -> APIError {
-        APIError::InternalServerError(error.to_string())
-    }
-}
-
-#[derive(Debug)]
-pub struct ApiErrorResponse {
+#[derive(Clone, Debug)]
+pub struct CustomApiError {
     status: StatusCode,
-    message: String,
+    detail: Cow<'static, str>,
 }
 
-impl From<APIError> for ApiErrorResponse {
-    fn from(error: APIError) -> Self {
-        ApiErrorResponse {
-            status: error.status_code(),
-            message: error.to_string(),
+impl fmt::Display for CustomApiError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.detail.fmt(f)
+    }
+}
+
+impl AppError for CustomApiError {
+    fn response(&self) -> axum::response::Response {
+        json_error(self.status, &self.detail)
+    }
+}
+
+// =============================================================================
+// Error impls
+
+impl<E: Error + Send + 'static> AppError for E {
+    fn response(&self) -> axum::response::Response {
+        tracing::error!(error = %self, "Internal server error");
+
+        server_error("Internal server error").into_response()
+    }
+}
+
+impl From<DieselError> for BoxedAppError {
+    fn from(err: DieselError) -> Self {
+        match err {
+            DieselError::NotFound => not_found(),
+            _ => Box::new(err),
         }
     }
 }
 
-impl IntoResponse for ApiErrorResponse {
-    fn into_response(self) -> Response {
-        let body = Json(serde_json::json!({
-            "status": self.status.as_u16(),
-            "message": self.message,
-        }))
-        .into_response();
-
-        let builder = Response::builder()
-            .header("Content-Type", "application/json")
-            .status(self.status);
-
-        builder.body(body.into_body()).unwrap_or_else(|error| {
-            (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()).into_response()
-        })
+impl From<diesel_async::pooled_connection::deadpool::PoolError> for BoxedAppError {
+    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> BoxedAppError {
+        tracing::error!("Database pool error: {err}");
+        service_unavailable()
     }
 }
 
-impl IntoResponse for APIError {
-    fn into_response(self) -> Response {
-        ApiErrorResponse::from(self).into_response()
+impl From<serde_json::Error> for BoxedAppError {
+    fn from(err: serde_json::Error) -> BoxedAppError {
+        Box::new(err)
+    }
+}
+
+impl From<std::io::Error> for BoxedAppError {
+    fn from(err: std::io::Error) -> BoxedAppError {
+        Box::new(err)
+    }
+}
+
+impl From<FilesystemError> for BoxedAppError {
+    fn from(err: FilesystemError) -> Self {
+        server_error(err)
+    }
+}
+
+impl From<MetadataError> for BoxedAppError {
+    fn from(err: MetadataError) -> Self {
+        match err {
+            MetadataError::Network(e) => server_error(format!(
+                "Network error while getting book information: {}",
+                e
+            )),
+            MetadataError::MissingTag(tag) => server_error(format!(
+                "Missing expected tag during book information retrieval: {}",
+                tag
+            )),
+            MetadataError::JsonParse(e) => server_error(format!(
+                "Failed to parse JSON while retrieving book information: {}",
+                e
+            )),
+            MetadataError::MissingBookInfo => {
+                server_error("No book information found in the provider response")
+            }
+            MetadataError::Other(msg) => server_error(format!("Unexpected error: {}", msg)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn http_error_responses() {
+        use serde::de::Error;
+
+        assert_eq!(bad_request("").response().status(), StatusCode::BAD_REQUEST);
+        assert_eq!(
+            server_error("").response().status(),
+            StatusCode::INTERNAL_SERVER_ERROR
+        );
+        assert_eq!(
+            unauthorized("").response().status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            BoxedAppError::from(DieselError::NotFound)
+                .response()
+                .status(),
+            StatusCode::NOT_FOUND
+        );
+        assert_eq!(
+            server_error("").response().status(),
+            StatusCode::INTERNAL_SERVER_ERROR
+        );
+
+        assert_eq!(
+            BoxedAppError::from(serde_json::Error::custom("ExpectedColon"))
+                .response()
+                .status(),
+            StatusCode::INTERNAL_SERVER_ERROR
+        );
     }
 }

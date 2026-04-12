@@ -1,13 +1,13 @@
 use std::path;
 
-use axum::{Json, extract::State, middleware};
+use axum::{Json, extract::State, http::StatusCode, middleware};
 use serde::Deserialize;
 use shiori_api_types::EncodableDirectories;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     config::state::AppState,
-    errors::{APIError, APIResult},
+    errors::{AppResult, bad_request, custom},
     middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
@@ -40,25 +40,24 @@ pub fn mount() -> OpenApiRouter<AppState> {
 async fn list_directories(
     State(app): State<AppState>,
     Json(body): Json<FolderRequest>,
-) -> APIResult<Json<EncodableDirectories>> {
+) -> AppResult<Json<EncodableDirectories>> {
     let requested_path = path::Path::new(&body.path);
 
     if requested_path.is_absolute() {
-        return Err(APIError::BadRequest(
-            "Absolute paths not allowed".to_string(),
-        ));
+        return Err(bad_request("Absolute paths not allowed"));
     }
 
     let path = app.base_path.join(requested_path).canonicalize()?;
 
     if !path.starts_with(&app.base_path) {
-        return Err(APIError::Forbidden(
-            "Access to the requested path is not allowed".to_string(),
+        return Err(custom(
+            StatusCode::FORBIDDEN,
+            "Access to the requested path is not allowed",
         ));
     }
 
     if !path.is_dir() {
-        return Err(APIError::BadRequest("Path must be a directory".to_string()));
+        return Err(bad_request("Path must be a directory"));
     }
 
     let dirs = shiori_filesystem::common::list_directories(&path, &app.base_path)?;

@@ -10,7 +10,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     config::state::AppState,
-    errors::{APIError, APIResult},
+    errors::{AppResult, bad_request},
     middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
@@ -39,10 +39,10 @@ pub fn mount() -> OpenApiRouter<AppState> {
 )]
 async fn get_book_metadata(
     Query(params): Query<ListQueryParams>,
-) -> APIResult<Json<EncodableMetadataSearch>> {
+) -> AppResult<Json<EncodableMetadataSearch>> {
     let metadata = match params.provider.as_str() {
         "goodreads" => GoodreadsProvider::search_id(&params.q_string).await?,
-        _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
+        _ => return Err(bad_request("Unknown metadata provider")),
     };
     Ok(Json(metadata))
 }
@@ -77,10 +77,10 @@ struct ListQueryParams {
 )]
 async fn search_books(
     Query(params): Query<BookQueryParams>,
-) -> APIResult<Json<Vec<EncodableMetadataSearch>>> {
+) -> AppResult<Json<Vec<EncodableMetadataSearch>>> {
     let books = match params.provider.as_str() {
         "goodreads" => GoodreadsProvider::search_books(params.into()).await?,
-        _ => return Err(APIError::BadRequest("Unknown provider".to_string())),
+        _ => return Err(bad_request("Unknown provider")),
     };
     Ok(Json(books))
 }

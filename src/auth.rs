@@ -1,24 +1,26 @@
 use argon2::{
-    password_hash::{PasswordHasher, PasswordVerifier},
     Argon2, PasswordHash,
+    password_hash::{PasswordHasher, PasswordVerifier},
 };
 
-use crate::errors::AuthError;
+use crate::errors::{AppResult, server_error};
 
-pub fn hash_password(password: &str) -> Result<String, AuthError> {
+pub fn hash_password(password: &str) -> AppResult<String> {
     let hash = Argon2::default()
         .hash_password(password.as_bytes())
-        .map_err(|_| AuthError::Argon2Error)?
+        .map_err(|_| server_error("Error during authentication"))?
         .to_string();
 
     Ok(hash)
 }
 
-pub fn verify_password(hash: &str, password: &str) -> Result<bool, AuthError> {
-    let parsed_hash = PasswordHash::new(hash).map_err(|_| AuthError::Argon2Error)?;
-    Ok(Argon2::default()
-        .verify_password(password.as_bytes(), &parsed_hash)
-        .is_ok())
+pub fn verify_password(hash: &str, password: &str) -> bool {
+    match PasswordHash::new(hash) {
+        Ok(parsed_hash) => Argon2::default()
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .is_ok(),
+        Err(_) => false,
+    }
 }
 
 #[cfg(test)]
@@ -31,6 +33,6 @@ mod tests {
             .hash_password(b"supercoolpass")
             .unwrap()
             .to_string();
-        assert!(verify_password(&hash, "supercoolpass").unwrap());
+        assert!(verify_password(&hash, "supercoolpass"));
     }
 }

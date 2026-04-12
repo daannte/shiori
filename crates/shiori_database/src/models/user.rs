@@ -30,12 +30,11 @@ impl User {
     pub async fn find_by_username(
         conn: &mut AsyncPgConnection,
         username: &str,
-    ) -> QueryResult<Option<User>> {
+    ) -> QueryResult<User> {
         User::query()
             .filter(users::username.eq(username.to_lowercase()))
             .first(conn)
             .await
-            .optional()
     }
 
     pub async fn count(conn: &mut AsyncPgConnection) -> QueryResult<i64> {
