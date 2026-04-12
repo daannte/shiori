@@ -3,6 +3,7 @@ use std::{ffi::OsStr, path};
 use axum::{
     Json,
     extract::{Path, State},
+    middleware,
 };
 use chrono::NaiveDate;
 use diesel_async::{AsyncConnection, scoped_futures::ScopedFutureExt};
@@ -18,19 +19,25 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{APIError, APIResult},
+    middleware::auth::auth_middleware,
+    routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_media_cover))
         .routes(routes!(get_media, patch_media, delete_media))
+        .layer(middleware::from_fn(auth_middleware))
 }
 
 /// Fetch media cover.
 #[utoipa::path(
     get,
     path = "/media/{id}/cover",
-    tag = "media",
+    tag = tags::MEDIA,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
     ),
@@ -63,7 +70,10 @@ async fn get_media_cover(
 #[utoipa::path(
     get,
     path = "/media/{id}",
-    tag = "media",
+    tag = tags::MEDIA,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
     ),
@@ -93,7 +103,10 @@ async fn get_media(
 #[utoipa::path(
     delete,
     path = "/media/{id}",
-    tag = "media",
+    tag = tags::MEDIA,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
     ),
@@ -180,7 +193,10 @@ pub struct PatchRequest {
 #[utoipa::path(
     patch,
     path = "/media/{id}",
-    tag = "media",
+    tag = tags::MEDIA,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the media item")
     ),

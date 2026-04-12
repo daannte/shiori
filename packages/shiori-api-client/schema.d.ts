@@ -4,6 +4,91 @@
  * Run `bun --bun run -F @shiori/api-client gen` to update this file.
  */
 export interface paths {
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Currently authenticated user */
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/refresh-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh JWT token */
+        post: operations["refresh_token"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register */
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/filesystem/directories/list": {
         parameters: {
             query?: never;
@@ -91,6 +176,23 @@ export interface paths {
         };
         /** Fetch media cover. */
         get: operations["get_media_cover"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Info about the server. */
+        get: operations["meta"];
         put?: never;
         post?: never;
         delete?: never;
@@ -258,6 +360,287 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Password associated with the account.
+                     * @example supercoolpass
+                     */
+                    password: string;
+                    /**
+                     * @description Username of the account.
+                     * @example Reaper
+                     */
+                    username: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully logged in */
+            200: {
+                headers: {
+                    /** @description Sets access_token and refresh_token cookies */
+                    "set-cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the user was created.
+                         * @example 2025-07-25T12:45:19Z
+                         */
+                        created_at: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the user.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Indicates whether the user is the owner of the server.
+                         * @example false
+                         */
+                        is_server_owner: boolean;
+                        /**
+                         * @description Username of the user.
+                         * @example Reaper
+                         */
+                        username: string;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully logged out */
+            204: {
+                headers: {
+                    /** @description Removes access_token and refresh_token cookies */
+                    "set-cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully retrieved current user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the user was created.
+                         * @example 2025-07-25T12:45:19Z
+                         */
+                        created_at: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the user.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Indicates whether the user is the owner of the server.
+                         * @example false
+                         */
+                        is_server_owner: boolean;
+                        /**
+                         * @description Username of the user.
+                         * @example Reaper
+                         */
+                        username: string;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    refresh_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie: {
+                /** @description Refresh token */
+                refresh_token: string;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully refreshed JWT token */
+            204: {
+                headers: {
+                    /** @description Sets access_token and refresh_token HttpOnly cookies */
+                    "set-cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Password associated with the account.
+                     * @example supercoolpass
+                     */
+                    password: string;
+                    /**
+                     * @description Username of the account.
+                     * @example Reaper
+                     */
+                    username: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully registered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description Timestamp of when the user was created.
+                         * @example 2025-07-25T12:45:19Z
+                         */
+                        created_at: string;
+                        /**
+                         * Format: int32
+                         * @description Unique identifier for the user.
+                         * @example 86
+                         */
+                        id: number;
+                        /**
+                         * @description Indicates whether the user is the owner of the server.
+                         * @example false
+                         */
+                        is_server_owner: boolean;
+                        /**
+                         * @description Username of the user.
+                         * @example Reaper
+                         */
+                        username: string;
+                    };
+                };
+            };
+            /** @description Bad request payload */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Username already taken */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     list_directories: {
         parameters: {
             query?: never;
@@ -778,6 +1161,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    meta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully retrieved server metadata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Whether the server has been initialized and an owner account exists.
+                         * @example true
+                         */
+                        initialized: boolean;
+                    };
+                };
             };
             /** @description Internal server error */
             500: {

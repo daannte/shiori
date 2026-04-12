@@ -5,14 +5,357 @@ expression: newest.to_pretty_json().unwrap()
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "shiori",
-    "description": "TODO DESCRIPTION OF SHIORI",
+    "title": "Shiori",
+    "description": "TODO",
     "license": {
       "name": ""
     },
     "version": "0.0.0"
   },
   "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Password associated with the account.",
+                    "examples": [
+                      "supercoolpass"
+                    ]
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username of the account.",
+                    "examples": [
+                      "Reaper"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully logged in",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Sets access_token and refresh_token cookies"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Successfully logged out",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Removes access_token and refresh_token cookies"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Currently authenticated user",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Refresh JWT token",
+        "operationId": "refresh_token",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "cookie",
+            "description": "Refresh token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully refreshed JWT token",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Sets access_token and refresh_token HttpOnly cookies"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Register",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Password associated with the account.",
+                    "examples": [
+                      "supercoolpass"
+                    ]
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username of the account.",
+                    "examples": [
+                      "Reaper"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request payload"
+          },
+          "409": {
+            "description": "Username already taken"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/v1/filesystem/directories/list": {
       "post": {
         "tags": [
@@ -92,7 +435,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/api/v1/libraries": {
@@ -157,7 +505,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -251,7 +604,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/api/v1/libraries/{id}/media": {
@@ -367,7 +725,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -508,7 +871,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/api/v1/media/{id}": {
@@ -566,7 +934,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -596,7 +969,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -695,7 +1073,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/api/v1/media/{id}/cover": {
@@ -723,6 +1106,47 @@ expression: newest.to_pretty_json().unwrap()
           },
           "404": {
             "description": "Media or cover not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Info about the server.",
+        "operationId": "meta",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved server metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "initialized"
+                  ],
+                  "properties": {
+                    "initialized": {
+                      "type": "boolean",
+                      "description": "Whether the server has been initialized and an owner account exists.",
+                      "examples": [
+                        true
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal server error"
@@ -879,7 +1303,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/api/v1/metadata/search": {
@@ -1043,7 +1472,12 @@ expression: newest.to_pretty_json().unwrap()
           "500": {
             "description": "Internal server error"
           }
-        }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
       }
     }
   },
@@ -1298,6 +1732,40 @@ expression: newest.to_pretty_json().unwrap()
           }
         }
       }
+    },
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "HttpOnly authentication cookie used to authorize user requests."
+      }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "library",
+      "description": "Library resources and operations"
+    },
+    {
+      "name": "media",
+      "description": "Media management and processing"
+    },
+    {
+      "name": "metadata",
+      "description": "Metadata and informational resources"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication and authorization"
+    },
+    {
+      "name": "filesystem",
+      "description": "File storage and filesystem operations"
+    },
+    {
+      "name": "system",
+      "description": "System state and utility operations"
+    }
+  ]
 }

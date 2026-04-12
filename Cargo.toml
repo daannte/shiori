@@ -9,9 +9,10 @@ members = ["crates/*"]
 
 [profile.dev.package]
 insta.opt-level = 3
-similar.opt-level = 3
 
 [dependencies]
+argon2 = "0.6.0-rc.8"
+axum-extra = { version = "0.12.5", features = ["cookie"] }
 axum_typed_multipart = "0.16.5"
 axum = { version = "0.8.8", features = ["multipart"] }
 chrono = { version = "0.4.44", default-features = false, features = ["serde"] }
@@ -33,6 +34,7 @@ shiori_api_types = { path = "crates/shiori_api_types" }
 shiori_core = { path = "crates/shiori_core" }
 shiori_database = { path = "crates/shiori_database" }
 shiori_filesystem = { path = "crates/shiori_filesystem" }
+shiori_jwt = { path = "crates/shiori_jwt" }
 shiori_metadata = { path = "crates/shiori_metadata" }
 
 [dev-dependencies]

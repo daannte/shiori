@@ -8,6 +8,7 @@
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import House from '@lucide/svelte/icons/house';
 	import BookText from '@lucide/svelte/icons/book-text';
+	import Logout from './logout.svelte';
 
 	let { data } = $props();
 
@@ -65,7 +66,7 @@
 											<Sidebar.MenuSubButton isActive={isActive(`/libraries/${library.id}/media`)}>
 												{#snippet child({ props })}
 													<a
-														href={resolve('/libraries/[library_id]/media', {
+														href={resolve('/(app)/libraries/[library_id]/media', {
 															library_id: library.id.toString()
 														})}
 														{...props}
@@ -84,5 +85,7 @@
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 	</Sidebar.Content>
-	<Sidebar.Footer />
+	<Sidebar.Footer class="items-end">
+		<Logout />
+	</Sidebar.Footer>
 </Sidebar.Root>

@@ -8,7 +8,12 @@ use thiserror::Error;
 
 pub type APIResult<T> = Result<T, APIError>;
 
-#[allow(unused)]
+#[derive(Debug, Error)]
+pub enum AuthError {
+    #[error("Authentication error")]
+    Argon2Error,
+}
+
 #[derive(Debug, Error)]
 pub enum APIError {
     #[error("{0}")]
@@ -19,6 +24,8 @@ pub enum APIError {
     BadRequest(String),
     #[error("{0}")]
     Forbidden(String),
+    #[error("Unauthorized")]
+    Unauthorized,
     #[error("{0}")]
     NotFound(String),
     #[error("{0}")]
@@ -32,6 +39,7 @@ impl APIError {
             APIError::NotImplemented => StatusCode::NOT_IMPLEMENTED,
             APIError::BadRequest(_) => StatusCode::BAD_REQUEST,
             APIError::Forbidden(_) => StatusCode::FORBIDDEN,
+            APIError::Unauthorized => StatusCode::UNAUTHORIZED,
             APIError::NotFound(_) => StatusCode::NOT_FOUND,
             APIError::DbError(diesel::result::Error::NotFound) => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
@@ -39,9 +47,13 @@ impl APIError {
     }
 }
 
-impl From<diesel_async::pooled_connection::deadpool::PoolError> for APIError {
-    fn from(error: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
-        APIError::InternalServerError(error.to_string())
+impl From<AuthError> for APIError {
+    fn from(error: AuthError) -> Self {
+        match error {
+            AuthError::Argon2Error => {
+                APIError::InternalServerError("Internal server error".to_string())
+            }
+        }
     }
 }
 
@@ -70,6 +82,12 @@ impl From<MetadataError> for APIError {
 
             MetadataError::Other(msg) => APIError::InternalServerError(msg),
         }
+    }
+}
+
+impl From<diesel_async::pooled_connection::deadpool::PoolError> for APIError {
+    fn from(error: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
+        APIError::InternalServerError(error.to_string())
     }
 }
 

@@ -5,7 +5,10 @@
 	let { media } = $props();
 </script>
 
-<a href={resolve('/media/[media_id]', { media_id: media.id.toString() })} class="group w-full">
+<a
+	href={resolve('/(app)/media/[media_id]', { media_id: media.id.toString() })}
+	class="group w-full"
+>
 	<div class="aspect-2/3 overflow-hidden rounded-2xl bg-secondary">
 		<img
 			class="h-full w-full object-cover transition duration-300 ease-out group-hover:scale-103"

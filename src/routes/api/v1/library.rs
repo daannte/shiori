@@ -6,6 +6,7 @@ use tokio::fs;
 use axum::{
     Json,
     extract::{Path, State},
+    middleware,
 };
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde::Deserialize;
@@ -18,19 +19,25 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{APIError, APIResult},
+    middleware::auth::auth_middleware,
+    routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(list_libraries, create_library))
         .routes(routes!(list_library_media, create_library_media))
+        .layer(middleware::from_fn(auth_middleware))
 }
 
 /// List all libraries.
 #[utoipa::path(
     get,
     path = "/libraries",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("cookie" = [])
+    ),
     responses(
         (status = 200, description = "Successfully fetched libraries", body = inline(Vec<EncodableLibrary>)),
         (status = 500, description = "Internal server error")
@@ -64,7 +71,10 @@ struct NewLibraryRequest {
 #[utoipa::path(
     post,
     path = "/libraries",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("cookie" = [])
+    ),
     request_body = inline(NewLibraryRequest),
     responses(
         (status = 200, description = "Successfully created library", body = inline(EncodableLibrary)),
@@ -139,7 +149,10 @@ async fn create_library(
 #[utoipa::path(
     get,
     path = "/libraries/{id}/media",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the library")
     ),
@@ -175,7 +188,10 @@ struct NewMediaRequest {
 #[utoipa::path(
     post,
     path = "/libraries/{id}/media",
-    tag = "library",
+    tag = tags::LIBRARY,
+    security(
+        ("cookie" = [])
+    ),
     params(
         ("id" = i32, Path, description = "Id of the library")
     ),

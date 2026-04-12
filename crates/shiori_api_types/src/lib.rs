@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
-use shiori_database::models::{Library, Media, MediaMetadata};
+use shiori_database::models::{Library, Media, MediaMetadata, User};
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = Library)]
@@ -133,6 +133,37 @@ impl From<MediaMetadata> for EncodableMetadata {
     }
 }
 
+#[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = User)]
+pub struct EncodableUser {
+    /// Unique identifier for the user.
+    #[schema(examples(86))]
+    pub id: i32,
+
+    /// Username of the user.
+    #[schema(examples("Reaper"))]
+    pub username: String,
+
+    /// Indicates whether the user is the owner of the server.
+    #[schema(examples(false))]
+    pub is_server_owner: bool,
+
+    /// Timestamp of when the user was created.
+    #[schema(examples("2025-07-25T12:45:19Z"))]
+    pub created_at: DateTime<Utc>,
+}
+
+impl From<User> for EncodableUser {
+    fn from(u: User) -> Self {
+        Self {
+            id: u.id,
+            username: u.username,
+            is_server_owner: u.is_server_owner,
+            created_at: u.created_at,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EncodableMediaWithMetadata {
     #[serde(flatten)]
@@ -193,4 +224,11 @@ pub struct EncodableDirectories {
     /// Immediate subdirectories of the given path.
     #[schema(examples("light_novels"))]
     pub directories: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, utoipa::ToSchema)]
+pub struct EncodableMeta {
+    /// Whether the server has been initialized and an owner account exists.
+    #[schema(examples(true))]
+    pub initialized: bool,
 }

@@ -36,7 +36,7 @@
 			});
 			if (!res.response.ok || !res.data) throw new Error('Failed to create library');
 			goto(
-				resolve('/libraries/[library_id]/media', {
+				resolve('/(app)/libraries/[library_id]/media', {
 					library_id: res.data.id.toString()
 				}),
 				{

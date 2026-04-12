@@ -39,10 +39,10 @@
 			<Dialog.Title>Confirm Delete</Dialog.Title>
 			<Dialog.Description>Do you really want to delete this?</Dialog.Description>
 		</Dialog.Header>
-		<div class="flex gap-4">
+		<Dialog.Footer>
 			<Button onclick={() => (isOpen = false)}>Cancel</Button>
 			<Button onclick={handleDelete} variant="destructive">Delete</Button>
-		</div>
+		</Dialog.Footer>
 		<span class="text-sm text-destructive">{error}</span>
 	</Dialog.Content>
 </Dialog.Root>

@@ -49,13 +49,13 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
         .and_then(Value::as_str)
         .map(String::from)
         .ok_or_else(|| {
-            let error_msg = format!("Missing title");
+            let error_msg = "Missing title".to_string();
             tracing::error!(%book, "{}", error_msg);
             MetadataError::Other(error_msg)
         })?;
 
     let provider_id = extract_id(book_info).ok_or_else(|| {
-        let error_msg = format!("Missing provider_id");
+        let error_msg = "Missing provider_id".to_string();
         tracing::error!(%book, "{}", error_msg);
         MetadataError::Other(error_msg)
     })?;
