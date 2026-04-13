@@ -38,7 +38,6 @@ pub struct NewApiToken<'a> {
     pub key_id: &'a str,
     pub token_hash: Vec<u8>,
     pub expires_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
     pub last_used_at: Option<DateTime<Utc>>,
 }
 

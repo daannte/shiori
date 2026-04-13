@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
-use shiori_database::models::{Library, Media, MediaMetadata, User};
+use shiori_database::models::{ApiToken, Library, Media, MediaMetadata, User};
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = Library)]
@@ -162,6 +162,63 @@ impl From<User> for EncodableUser {
             created_at: u.created_at,
         }
     }
+}
+
+#[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = ApiToken)]
+pub struct EncodableApiToken {
+    /// Unique identifier for the token.
+    #[schema(examples(86))]
+    pub id: i32,
+
+    /// Unique identifier of the user associated with this token.
+    #[schema(examples(47))]
+    pub user_id: i32,
+
+    /// Name for the token.
+    #[schema(examples("Koreader Sync"))]
+    pub name: String,
+
+    /// Short key id for the token.
+    #[schema(examples("1a2b3c4d"))]
+    pub key_id: String,
+
+    /// Timestamp of when the token expires.
+    #[schema(examples("2026-12-31T00:00:00Z"))]
+    pub expires_at: Option<DateTime<Utc>>,
+
+    /// Timestamp of when the token was created.
+    #[schema(examples("2025-07-25T12:45:19Z"))]
+    pub created_at: DateTime<Utc>,
+
+    /// Timestamp of when the token was last used.
+    #[schema(examples("2026-03-24T16:33:19Z"))]
+    pub last_used_at: Option<DateTime<Utc>>,
+}
+
+impl From<ApiToken> for EncodableApiToken {
+    fn from(t: ApiToken) -> Self {
+        Self {
+            id: t.id,
+            user_id: t.user_id,
+            name: t.name,
+            key_id: t.key_id,
+            expires_at: t.expires_at,
+            created_at: t.created_at,
+            last_used_at: t.last_used_at,
+        }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
+pub struct EncodableApiTokenWithToken {
+    /// The token information.
+    #[serde(flatten)]
+    pub token: EncodableApiToken,
+
+    /// The plaintext representation of the API token.
+    #[schema(examples("shiori_1a2b3c4d_1a2b3c4d5e6f7g8h9i0j1234567890ab"))]
+    pub plaintoken: String,
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
