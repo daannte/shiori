@@ -234,7 +234,8 @@ async fn logout(State(app): State<AppState>, jar: CookieJar) -> AppResult<(Statu
     path = "/auth/me",
     tag = tags::AUTH,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     responses(
         (status = 200, description = "Successfully retrieved current user", body = inline(EncodableUser)),

@@ -37,7 +37,8 @@ pub fn mount() -> OpenApiRouter<AppState> {
     path = "/libraries",
     tag = tags::LIBRARY,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     responses(
         (status = 200, description = "Successfully fetched libraries", body = inline(Vec<EncodableLibrary>)),
@@ -74,7 +75,8 @@ struct NewLibraryRequest {
     path = "/libraries",
     tag = tags::LIBRARY,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     request_body = inline(NewLibraryRequest),
     responses(
@@ -151,7 +153,8 @@ async fn create_library(
     path = "/libraries/{id}/media",
     tag = tags::LIBRARY,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the library")
@@ -190,7 +193,8 @@ struct NewMediaRequest {
     path = "/libraries/{id}/media",
     tag = tags::LIBRARY,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     params(
         ("id" = i32, Path, description = "Id of the library")

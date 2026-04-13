@@ -26,7 +26,8 @@ pub fn mount() -> OpenApiRouter<AppState> {
     path = "/filesystem/directories/list",
     tag = tags::FILESYSTEM,
     security(
-        ("cookie" = [])
+        ("cookie" = []),
+        ("api_token" = [])
     ),
     request_body = inline(FolderRequest),
     responses(
