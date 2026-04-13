@@ -215,6 +215,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -439,6 +442,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -509,6 +515,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       },
@@ -608,6 +617,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -729,6 +741,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       },
@@ -875,6 +890,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -938,6 +956,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       },
@@ -973,6 +994,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       },
@@ -1077,6 +1101,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -1114,6 +1141,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -1307,6 +1337,9 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -1476,6 +1509,241 @@ expression: newest.to_pretty_json().unwrap()
         "security": [
           {
             "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tokens": {
+      "get": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "List all api tokens of authenticated user.",
+        "operationId": "list_tokens",
+        "responses": {
+          "200": {
+            "description": "Successfully fetched api tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "user_id",
+                      "name",
+                      "key_id",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp of when the token was created.",
+                        "examples": [
+                          "2025-07-25T12:45:19Z"
+                        ]
+                      },
+                      "expires_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "Timestamp of when the token expires.",
+                        "examples": [
+                          "2026-12-31T00:00:00Z"
+                        ]
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier for the token.",
+                        "examples": [
+                          86
+                        ]
+                      },
+                      "key_id": {
+                        "type": "string",
+                        "description": "Short key id for the token.",
+                        "examples": [
+                          "1a2b3c4d"
+                        ]
+                      },
+                      "last_used_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "Timestamp of when the token was last used.",
+                        "examples": [
+                          "2026-03-24T16:33:19Z"
+                        ]
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name for the token.",
+                        "examples": [
+                          "Koreader Sync"
+                        ]
+                      },
+                      "user_id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier of the user associated with this token.",
+                        "examples": [
+                          47
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Create new api token.",
+        "operationId": "create_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Timestamp of when the token expires.",
+                    "examples": [
+                      "2026-12-31T00:00:00Z"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the token",
+                    "examples": [
+                      "Koreader Sync"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created api token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiToken",
+                      "description": "The token information."
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "plaintoken"
+                      ],
+                      "properties": {
+                        "plaintoken": {
+                          "type": "string",
+                          "description": "The plaintext representation of the API token.",
+                          "examples": [
+                            "shiori_1a2b3c4d_1a2b3c4d5e6f7g8h9i0j1234567890ab"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tokens/{key_id}": {
+      "delete": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Delete api token with key id.",
+        "operationId": "delete_token",
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "description": "Key id of the api token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted api token"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
           }
         ]
       }
@@ -1483,6 +1751,78 @@ expression: newest.to_pretty_json().unwrap()
   },
   "components": {
     "schemas": {
+      "ApiToken": {
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "name",
+          "key_id",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when the token was created.",
+            "examples": [
+              "2025-07-25T12:45:19Z"
+            ]
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the token expires.",
+            "examples": [
+              "2026-12-31T00:00:00Z"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier for the token.",
+            "examples": [
+              86
+            ]
+          },
+          "key_id": {
+            "type": "string",
+            "description": "Short key id for the token.",
+            "examples": [
+              "1a2b3c4d"
+            ]
+          },
+          "last_used_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the token was last used.",
+            "examples": [
+              "2026-03-24T16:33:19Z"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for the token.",
+            "examples": [
+              "Koreader Sync"
+            ]
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier of the user associated with this token.",
+            "examples": [
+              47
+            ]
+          }
+        }
+      },
       "Media": {
         "type": "object",
         "required": [
@@ -1734,11 +2074,17 @@ expression: newest.to_pretty_json().unwrap()
       }
     },
     "securitySchemes": {
+      "api_token": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "authorization",
+        "description": "The API token used to authenticate requests."
+      },
       "cookie": {
         "type": "apiKey",
         "in": "cookie",
         "name": "access_token",
-        "description": "HttpOnly authentication cookie used to authorize user requests."
+        "description": "The authentication cookie used to authorize user requests."
       }
     }
   },
@@ -1766,6 +2112,10 @@ expression: newest.to_pretty_json().unwrap()
     {
       "name": "system",
       "description": "System state and utility operations"
+    },
+    {
+      "name": "tokens",
+      "description": "Management of API tokens"
     }
   ]
 }
