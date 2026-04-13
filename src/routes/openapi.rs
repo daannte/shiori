@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use axum::http::header;
 use shiori_core::App;
 use utoipa::{
     Modify, OpenApi,
@@ -22,7 +23,8 @@ use crate::routes::api;
         (name = tags::METADATA, description = "Metadata and informational resources"),
         (name = tags::AUTH, description = "Authentication and authorization"),
         (name = tags::FILESYSTEM, description = "File storage and filesystem operations"),
-        (name = tags::SYSTEM, description = "System state and utility operations")
+        (name = tags::SYSTEM, description = "System state and utility operations"),
+        (name = tags::TOKENS, description = "Management of API tokens")
     )
 )]
 pub struct BaseOpenApi;
@@ -46,9 +48,16 @@ impl Modify for SecurityAddon {
     fn modify(&self, openapi: &mut openapi::OpenApi) {
         let components = openapi.components.get_or_insert_default();
 
-        let desc = "HttpOnly authentication cookie used to authorize user requests.";
+        let desc = "The authentication cookie used to authorize user requests.";
         let cookie = ApiKey::Cookie(ApiKeyValue::with_description("access_token", desc));
         components.add_security_scheme("cookie", SecurityScheme::ApiKey(cookie));
+
+        let desc = "The API token used to authenticate requests.";
+        let api_token = ApiKey::Header(ApiKeyValue::with_description(
+            header::AUTHORIZATION.as_str(),
+            desc,
+        ));
+        components.add_security_scheme("api_token", SecurityScheme::ApiKey(api_token));
     }
 }
 
@@ -63,4 +72,5 @@ pub mod tags {
     pub const AUTH: &str = "auth";
     pub const FILESYSTEM: &str = "filesystem";
     pub const SYSTEM: &str = "system";
+    pub const TOKENS: &str = "tokens";
 }
