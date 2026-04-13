@@ -1,4 +1,4 @@
-// pub use self::api_token::{ApiToken, NewApiToken};
+pub use self::api_token::{ApiToken, NewApiToken};
 pub use self::library::{Library, NewLibrary};
 pub use self::media::{Media, NewMedia, PatchMedia};
 pub use self::media_metadata::{MediaMetadata, NewMediaMetadata, UpdateMediaMetadata};
