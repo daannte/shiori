@@ -28,6 +28,12 @@ pub struct ApiToken {
     pub last_used_at: Option<DateTime<Utc>>,
 }
 
+impl ApiToken {
+    pub async fn all(conn: &mut AsyncPgConnection) -> QueryResult<Vec<ApiToken>> {
+        ApiToken::query().load(conn).await
+    }
+}
+
 /// Represents a new api token record insertable to the `api_tokens` table.
 #[derive(Debug, Insertable)]
 #[diesel(table_name = api_tokens)]

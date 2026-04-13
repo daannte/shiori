@@ -1,8 +1,11 @@
 use axum::{Json, extract::State, middleware};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use shiori_api_types::EncodableApiTokenWithToken;
-use shiori_database::{models::NewApiToken, token::Token};
+use shiori_api_types::{EncodableApiToken, EncodableApiTokenWithToken};
+use shiori_database::{
+    models::{ApiToken, NewApiToken},
+    token::Token,
+};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
@@ -85,13 +88,21 @@ async fn create_token(
         ("api_token" = [])
     ),
     responses(
-        (status = 200, description = "Successfully fetched api tokens"),
+        (status = 200, description = "Successfully fetched api tokens", body = inline(Vec<EncodableApiToken>)),
         (status = 401, description = "Unauthorized"),
         (status = 500, description = "Internal server error")
     )
 )]
-async fn list_tokens(State(_app): State<AppState>) -> AppResult<()> {
-    Ok(())
+async fn list_tokens(State(app): State<AppState>) -> AppResult<Json<Vec<EncodableApiToken>>> {
+    let mut conn = app.db().await?;
+
+    let tokens = ApiToken::all(&mut conn)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<_>>();
+
+    Ok(Json(tokens))
 }
 
 /// Delete current api token.
