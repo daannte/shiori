@@ -17,7 +17,7 @@
 		isLoading?: boolean;
 		triggerVariant?: ButtonVariant;
 		triggerSize?: ButtonSize;
-		trigger?: Snippet;
+		trigger?: Snippet | string;
 		children?: Snippet;
 	}
 
@@ -46,10 +46,18 @@
 <Dialog.Root bind:open={isOpen} onOpenChange={handleOnOpenChange}>
 	{#if trigger}
 		<Dialog.Trigger
-			type="button"
-			class={buttonVariants({ variant: triggerVariant, size: triggerSize })}
+			{...typeof trigger !== 'string'
+				? {
+						type: 'button',
+						class: buttonVariants({ variant: triggerVariant, size: triggerSize })
+					}
+				: {}}
 		>
-			{@render trigger()}
+			{#if typeof trigger === 'string'}
+				{trigger}
+			{:else}
+				{@render trigger()}
+			{/if}
 		</Dialog.Trigger>
 	{/if}
 	<Dialog.Content>

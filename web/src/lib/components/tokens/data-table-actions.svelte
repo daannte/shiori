@@ -4,18 +4,25 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { createClient } from '@shiori/api-client';
 	import { invalidate } from '$app/navigation';
+	import Dialog from '../dialog.svelte';
 
 	const client = createClient({ fetch });
 
 	let { key_id }: { key_id: string } = $props();
 
+	let isDeleteOpen = $state(false);
+	let isDeleting = $state(false);
+
 	async function handleDelete() {
+		isDeleting = true;
 		try {
 			const res = await client.DELETE('/api/v1/tokens/{key_id}', { params: { path: { key_id } } });
 			if (res.error) throw new Error();
 			invalidate('tokens:load');
 		} catch {
 			console.error('Failed to delete token');
+		} finally {
+			isDeleting = false;
 		}
 	}
 </script>
@@ -30,9 +37,21 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
-			<DropdownMenu.Item variant="destructive" onclick={handleDelete}>
-				<span>Delete</span>
-			</DropdownMenu.Item>
+			<DropdownMenu.Item variant="destructive" onclick={() => (isDeleteOpen = true)}
+				>Delete</DropdownMenu.Item
+			>
 		</DropdownMenu.Group>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
+
+<Dialog
+	title="Delete API Token"
+	description="Deleting this API token will immediately revoke access for any services using it. This action cannot be undone."
+	bind:isOpen={isDeleteOpen}
+	onClose={() => (isDeleteOpen = false)}
+	onConfirm={handleDelete}
+	confirmText="Delete"
+	cancelVariant="secondary"
+	confirmVariant="destructive"
+	isLoading={isDeleting}
+/>

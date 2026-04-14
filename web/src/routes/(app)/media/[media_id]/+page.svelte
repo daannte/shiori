@@ -124,6 +124,7 @@
 				onConfirm={handleDelete}
 				cancelVariant="secondary"
 				confirmVariant="destructive"
+				confirmText="Delete"
 				triggerVariant="destructive"
 				triggerSize="icon"
 			>
