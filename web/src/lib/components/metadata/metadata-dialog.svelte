@@ -2,13 +2,14 @@
 	import { createClient, type operations } from '@shiori/api-client';
 
 	import * as Dialog from '../ui/dialog';
-	import { Button } from '../ui/button';
+	import { Button, buttonVariants } from '../ui/button';
 	import { Label } from '../ui/label';
 	import { Input } from '../ui/input';
 	import SearchCard from './search-card.svelte';
 
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
+	import Database from '@lucide/svelte/icons/database';
 
 	type MetadataSearch =
 		operations['get_book_metadata']['responses']['200']['content']['application/json'];
@@ -71,6 +72,9 @@
 </script>
 
 <Dialog.Root bind:open={isOpen}>
+	<Dialog.Trigger type="button" class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+		<Database />
+	</Dialog.Trigger>
 	<Dialog.Content class="flex max-h-[90vh] flex-col sm:min-w-11/12">
 		<Dialog.Header>
 			<Dialog.Title class="text-xl font-semibold">Fetch Metadata</Dialog.Title>

@@ -5,15 +5,16 @@
 		type components,
 		type operations
 	} from '@shiori/api-client';
-	import { invalidate } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 
 	import { Button } from '$lib/components/ui/button';
 	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
+	import Dialog from '$lib/components/dialog.svelte';
 
 	import Download from '@lucide/svelte/icons/download';
-	import Database from '@lucide/svelte/icons/database';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import DeleteDialog from '$lib/components/delete-dialog.svelte';
+	import { resolve } from '$app/paths';
+	import { format } from 'date-fns';
 
 	type PatchMetadata = components['schemas']['PatchMetadata'];
 	type MetadataSearch =
@@ -39,11 +40,7 @@
 		if (!value) return 'Unknown';
 
 		if (key === 'published_at' && typeof value === 'string') {
-			return new Date(value).toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric'
-			});
+			return format(value, 'PPP');
 		}
 
 		return value;
@@ -73,6 +70,18 @@
 			invalidate('media:page');
 		} catch (e) {
 			console.error('Failed to save metadata: ', e);
+		}
+	}
+
+	async function handleDelete() {
+		try {
+			let res = await client.DELETE('/api/v1/media/{id}', { params: { path: { id: data.id } } });
+			if (res.error || res.data) throw new Error();
+			goto(resolve('/'));
+		} catch (e) {
+			console.error('Failed to delete media');
+		} finally {
+			isDeleteOpen = false;
 		}
 	}
 </script>
@@ -105,13 +114,23 @@
 		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
 
 		<div class="mt-4 flex gap-2">
-			<Button onclick={() => (isMetadataOpen = true)} size="icon" variant="outline"
-				><Database /></Button
-			>
+			<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
 			<Button size="icon" variant="outline"><Download /></Button>
-			<Button onclick={() => (isDeleteOpen = true)} size="icon" variant="destructive"
-				><Trash2 /></Button
+			<Dialog
+				title={`Delete ${data.name}`}
+				description={`This action cannot be undone. ${data.name} will be permanently removed.`}
+				bind:isOpen={isDeleteOpen}
+				onClose={() => (isDeleteOpen = false)}
+				onConfirm={handleDelete}
+				cancelVariant="secondary"
+				confirmVariant="destructive"
+				triggerVariant="destructive"
+				triggerSize="icon"
 			>
+				{#snippet trigger()}
+					<Trash2 />
+				{/snippet}
+			</Dialog>
 			{#if metadataSearch}
 				<Button onclick={saveMetadata}>Save</Button>
 			{/if}
@@ -131,6 +150,3 @@
 		</div>
 	</div>
 </div>
-
-<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
-<DeleteDialog id={data.id} bind:isOpen={isDeleteOpen} />
