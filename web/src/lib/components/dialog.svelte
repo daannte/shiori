@@ -6,7 +6,7 @@
 
 	interface Props {
 		isOpen: boolean;
-		onConfirm: () => void;
+		onConfirm?: () => void;
 		onClose: () => void;
 		title: string;
 		description?: string;
@@ -18,6 +18,8 @@
 		triggerVariant?: ButtonVariant;
 		triggerSize?: ButtonSize;
 		trigger?: Snippet | string;
+		showFooter?: boolean;
+		class?: string;
 		children?: Snippet;
 	}
 
@@ -35,6 +37,8 @@
 		trigger,
 		triggerSize,
 		triggerVariant,
+		showFooter = false,
+		class: className,
 		children
 	}: Props = $props();
 
@@ -60,23 +64,25 @@
 			{/if}
 		</Dialog.Trigger>
 	{/if}
-	<Dialog.Content>
+	<Dialog.Content class={className}>
 		<Dialog.Header>
 			<Dialog.Title>{title}</Dialog.Title>
 			<Dialog.Description>{description}</Dialog.Description>
 		</Dialog.Header>
 		{@render children?.()}
-		<Dialog.Footer>
-			<Button disabled={isLoading} onclick={onClose} variant={cancelVariant}
-				>{cancelText || 'Cancel'}</Button
-			>
-			<Button disabled={isLoading} onclick={onConfirm} variant={confirmVariant}>
-				{#if isLoading}
-					<LoaderCircle class="animate-spin" />
-				{:else}
-					{confirmText || 'Confirm'}
-				{/if}
-			</Button>
-		</Dialog.Footer>
+		{#if showFooter}
+			<Dialog.Footer>
+				<Button disabled={isLoading} onclick={onClose} variant={cancelVariant}
+					>{cancelText || 'Cancel'}</Button
+				>
+				<Button disabled={isLoading} onclick={onConfirm} variant={confirmVariant}>
+					{#if isLoading}
+						<LoaderCircle class="animate-spin" />
+					{:else}
+						{confirmText || 'Confirm'}
+					{/if}
+				</Button>
+			</Dialog.Footer>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

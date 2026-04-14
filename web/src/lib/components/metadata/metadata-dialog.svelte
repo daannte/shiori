@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createClient, type operations } from '@shiori/api-client';
 
-	import * as Dialog from '../ui/dialog';
-	import { Button, buttonVariants } from '../ui/button';
+	import { Button } from '../ui/button';
 	import { Label } from '../ui/label';
 	import { Input } from '../ui/input';
 	import SearchCard from './search-card.svelte';
+	import Dialog from '../dialog.svelte';
 
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
@@ -71,16 +71,19 @@
 	}
 </script>
 
-<Dialog.Root bind:open={isOpen}>
-	<Dialog.Trigger type="button" class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+<Dialog
+	bind:isOpen
+	title="Fetch Metadata"
+	onClose={() => (isOpen = false)}
+	triggerVariant="outline"
+	triggerSize="icon"
+	class="flex max-h-[90vh] flex-col sm:min-w-11/12"
+>
+	{#snippet trigger()}
 		<Database />
-	</Dialog.Trigger>
-	<Dialog.Content class="flex max-h-[90vh] flex-col sm:min-w-11/12">
-		<Dialog.Header>
-			<Dialog.Title class="text-xl font-semibold">Fetch Metadata</Dialog.Title>
-			<Dialog.Description>Search by title and author to fetch metadata.</Dialog.Description>
-		</Dialog.Header>
+	{/snippet}
 
+	{#snippet children()}
 		<div class="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
 			<div>
 				<Label for="author" class="sr-only">Author</Label>
@@ -109,7 +112,6 @@
 				{/if}
 			</Button>
 		</div>
-
 		{#if books.length}
 			<div class="mt-6 grid gap-4 overflow-y-auto sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 				{#each books as book (book.provider_id)}
@@ -117,5 +119,5 @@
 				{/each}
 			</div>
 		{/if}
-	</Dialog.Content>
-</Dialog.Root>
+	{/snippet}
+</Dialog>
