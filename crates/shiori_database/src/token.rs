@@ -47,8 +47,8 @@ pub struct Token {
     full: String,
 }
 
-impl Token {
-    pub fn new() -> Self {
+impl Default for Token {
+    fn default() -> Self {
         let key_id = Alphanumeric.sample_string(&mut rand::rng(), KEY_ID_LENGTH);
         let secret = Alphanumeric.sample_string(&mut rand::rng(), TOKEN_LENGTH);
 
@@ -60,7 +60,9 @@ impl Token {
             full,
         }
     }
+}
 
+impl Token {
     pub fn key_id(&self) -> &str {
         &self.key_id
     }
@@ -87,7 +89,7 @@ mod tests {
 
     #[test]
     fn token_format_is_valid() {
-        let token = Token::new();
+        let token = Token::default();
         let parts: Vec<&str> = token.token().split('_').collect();
 
         assert_eq!(parts.len(), 3);
@@ -97,14 +99,14 @@ mod tests {
 
     #[test]
     fn token_contains_correct_key_id() {
-        let token = Token::new();
+        let token = Token::default();
 
         assert!(token.token().contains(token.key_id()));
     }
 
     #[test]
     fn parse_valid_token() {
-        let token = Token::new();
+        let token = Token::default();
         let parsed = HashedToken::parse(token.token());
 
         assert!(parsed.is_ok());
@@ -133,7 +135,7 @@ mod tests {
 
     #[test]
     fn parsed_hash_matches_secret() {
-        let token = Token::new();
+        let token = Token::default();
 
         let parsed = HashedToken::parse(token.token()).unwrap();
         let expected = HashedToken::hash(token.secret());

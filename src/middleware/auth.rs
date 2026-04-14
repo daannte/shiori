@@ -28,7 +28,7 @@ pub async fn auth_middleware(mut req: Request, next: Next) -> AppResult<Response
         let (scheme, token) = auth_header.split_once(' ').unwrap_or(("", auth_header));
 
         if !scheme.eq_ignore_ascii_case("bearer") {
-            return Err(unauthorized(&format!(
+            return Err(unauthorized(format!(
                 "Invalid `Authorization` header: Found unexpected authentication scheme: `{scheme}`"
             )));
         }

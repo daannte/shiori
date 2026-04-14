@@ -69,7 +69,7 @@ async fn create_token(
 
     let conn = app.db().await?;
 
-    let token = Token::new();
+    let token = Token::default();
 
     let new_token = NewApiToken {
         user_id: auth.user().id,
