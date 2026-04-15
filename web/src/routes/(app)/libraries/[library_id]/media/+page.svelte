@@ -7,6 +7,7 @@
 	import Dialog from '$lib/components/dialog.svelte';
 	import Dropzone from '$lib/components/upload/dropzone.svelte';
 	import FilesList from '$lib/components/upload/files-list.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import { createClient } from '@shiori/api-client';
 	import { invalidate } from '$app/navigation';
 
@@ -36,8 +37,11 @@
 			invalidate('libraries:media');
 		} catch (e) {
 			console.error('Failed to upload files');
+		} finally {
+			isUploadOpen = false;
 		}
 	}
+	$inspect(isUploadOpen);
 </script>
 
 {#if data.media.length > 0}
@@ -58,28 +62,25 @@
 		icon={BookText}
 	>
 		{#snippet content()}
-			<Dialog
-				title="Upload Files"
-				bind:isOpen={isUploadOpen}
-				isLoading={isUploading}
-				onClose={() => {
-					isUploadOpen = false;
-					files = [];
-				}}
-				onConfirm={handleUpload}
-				triggerSize="lg"
-				confirmText="Upload"
-				cancelVariant="secondary"
-			>
-				{#snippet trigger()}
-					Upload Files
-				{/snippet}
-
-				{#snippet children()}
-					<Dropzone bind:files />
-					<FilesList bind:files />
-				{/snippet}
-			</Dialog>
+			<Button size="lg" onclick={() => (isUploadOpen = true)}>Upload Files</Button>
 		{/snippet}
 	</EmptyView>
 {/if}
+
+<Dialog
+	title="Upload Files"
+	bind:isOpen={isUploadOpen}
+	isLoading={isUploading}
+	onClose={() => {
+		isUploadOpen = false;
+		files = [];
+	}}
+	onConfirm={handleUpload}
+	confirmText="Upload"
+	cancelVariant="secondary"
+>
+	{#snippet children()}
+		<Dropzone bind:files />
+		<FilesList bind:files />
+	{/snippet}
+</Dialog>
