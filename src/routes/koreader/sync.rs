@@ -102,7 +102,11 @@ async fn update_progress(
         completed,
     };
 
-    let saved = progress.upsert(&mut conn).await?;
+    // NOTE: I'll leave it to 404 for now if the book is complete
+    let saved = progress.upsert(&mut conn).await.map_err(|e| {
+        tracing::error!("Book is already complete");
+        e
+    })?;
 
     tracing::debug!(progress = ?saved, "Updated reading progress");
 

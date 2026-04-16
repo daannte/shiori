@@ -1,6 +1,6 @@
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
-use diesel::{dsl::sql, prelude::*};
+use diesel::{dsl::sql, prelude::*, query_dsl::methods::FilterDsl};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use serde::Serialize;
 
@@ -68,6 +68,7 @@ impl UpdateReadingProgress<'_> {
                     "COALESCE(reading_progress.completed_at, EXCLUDED.completed_at)",
                 )),
             ))
+            .filter(reading_progress::completed.eq(false))
             .returning(ReadingProgress::as_returning())
             .get_result(&mut conn)
             .await
