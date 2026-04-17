@@ -1,5 +1,5 @@
 use axum::{
-    extract::{FromRequestParts, Request},
+    extract::{FromRequestParts, Path, Request},
     http::header,
     middleware::Next,
     response::Response,
@@ -52,6 +52,18 @@ pub async fn auth_middleware(mut req: Request, next: Next) -> AppResult<Response
     }
 
     Err(unauthorized("Unauthorized"))
+}
+
+pub async fn url_auth_middleware(
+    Path(api_token): Path<String>,
+    mut req: Request,
+    next: Next,
+) -> AppResult<Response> {
+    let token = HashedToken::parse(&api_token).map_err(|_| unauthorized("Invalid API token"))?;
+
+    req.extensions_mut().insert(AuthContext::Token(token.hash));
+
+    Ok(next.run(req).await)
 }
 
 #[derive(Clone)]

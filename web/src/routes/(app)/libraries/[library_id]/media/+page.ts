@@ -12,7 +12,7 @@ export const load: PageLoad = async ({ fetch, params, depends }) => {
 
 	const libraryId = parseInt(params.library_id);
 	if (isNaN(libraryId)) {
-		throw error(400, { message: 'Invalid library id' });
+		error(400, { message: 'Invalid library id' });
 	}
 
 	const libraryMedia = await loadLibraryMedia(client, libraryId);

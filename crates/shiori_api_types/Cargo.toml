@@ -3,6 +3,7 @@ name = "shiori_api_types"
 edition = "2024"
 
 [dependencies]
+bigdecimal = { version = "0.4.10", features = ["serde"] }
 chrono = { version = "0.4.44", default-features = false, features = ["serde"] }
 utoipa = { version = "5", features = ["chrono"] }
 serde = { version = "1.0", features = ["derive"] }

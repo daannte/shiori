@@ -3,8 +3,8 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    models::{Library, MediaMetadata},
-    schema::{media, media_metadata},
+    models::{Library, MediaMetadata, ReadingProgress},
+    schema::{media, media_metadata, reading_progress},
 };
 use serde::Serialize;
 
@@ -31,6 +31,8 @@ pub struct Media {
     pub library_id: i32,
     /// File system path where the cover is stored.
     pub cover_path: Option<String>,
+    /// Hash of the book in the Koreader system.
+    pub koreader_hash: Option<String>,
 }
 
 impl Media {
@@ -38,13 +40,30 @@ impl Media {
         Media::query().find(id).first(conn).await
     }
 
-    pub async fn find_by_library_id(
+    pub async fn find_by_library_with_progress(
         conn: &mut AsyncPgConnection,
         library_id: i32,
-    ) -> QueryResult<Vec<Media>> {
-        Media::query()
+        user_id: i32,
+    ) -> QueryResult<Vec<(Media, Option<ReadingProgress>)>> {
+        media::table
+            .left_join(
+                reading_progress::table.on(reading_progress::media_id
+                    .eq(media::id)
+                    .and(reading_progress::user_id.eq(user_id))),
+            )
             .filter(media::library_id.eq(library_id))
+            .select((Media::as_select(), Option::as_select()))
             .load(conn)
+            .await
+    }
+
+    pub async fn find_by_koreader_hash(
+        conn: &mut AsyncPgConnection,
+        koreader_hash: &str,
+    ) -> QueryResult<Media> {
+        Media::query()
+            .filter(media::koreader_hash.eq(koreader_hash))
+            .first(conn)
             .await
     }
 
@@ -55,8 +74,26 @@ impl Media {
         media::table
             .left_join(media_metadata::table)
             .filter(media::id.eq(id))
-            .select((Media::as_select(), Option::<MediaMetadata>::as_select()))
-            .first::<(Media, Option<MediaMetadata>)>(conn)
+            .select((Media::as_select(), Option::as_select()))
+            .first(conn)
+            .await
+    }
+
+    pub async fn with_details(
+        conn: &mut AsyncPgConnection,
+        id: i32,
+        user_id: i32,
+    ) -> QueryResult<(Media, Option<MediaMetadata>, Option<ReadingProgress>)> {
+        media::table
+            .left_join(media_metadata::table)
+            .left_join(
+                reading_progress::table.on(reading_progress::media_id
+                    .eq(media::id)
+                    .and(reading_progress::user_id.eq(user_id))),
+            )
+            .filter(media::id.eq(id))
+            .select((Media::as_select(), Option::as_select(), Option::as_select()))
+            .first(conn)
             .await
     }
 
@@ -76,6 +113,7 @@ pub struct NewMedia<'a> {
     pub extension: &'a str,
     pub library_id: i32,
     pub cover_path: Option<&'a str>,
+    pub koreader_hash: Option<&'a str>,
 }
 
 impl NewMedia<'_> {

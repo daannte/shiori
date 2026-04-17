@@ -8,7 +8,7 @@ use axum::{
 use chrono::NaiveDate;
 use diesel_async::{AsyncConnection, scoped_futures::ScopedFutureExt};
 use serde::Deserialize;
-use shiori_api_types::{EncodableMediaWithMetadata, EncodableMetadata};
+use shiori_api_types::{EncodableMediaDetails, EncodableMetadata};
 use shiori_database::models::{Media, PatchMedia, UpdateMediaMetadata};
 use shiori_filesystem::{
     common::{delete_file, move_file},
@@ -19,7 +19,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, not_found},
-    middleware::auth::auth_middleware,
+    middleware::auth::{AuthUser, auth_middleware},
     routes::openapi::tags,
 };
 
@@ -76,7 +76,7 @@ async fn get_media_cover(
         ("id" = i32, Path, description = "Id of the media item")
     ),
     responses(
-        (status = 200, description = "Successfully fetched media cover", body = inline(EncodableMediaWithMetadata)),
+        (status = 200, description = "Successfully fetched media", body = inline(EncodableMediaDetails)),
         (status = 404, description = "Media not found"),
         (status = 500, description = "Internal server error")
     )
@@ -84,14 +84,17 @@ async fn get_media_cover(
 async fn get_media(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
-) -> AppResult<Json<EncodableMediaWithMetadata>> {
+    AuthUser(auth): AuthUser,
+) -> AppResult<Json<EncodableMediaDetails>> {
     let mut conn = app.db().await?;
 
-    let (media, metadata) = Media::with_metadata(&mut conn, media_id).await?;
+    let (media, metadata, progress) =
+        Media::with_details(&mut conn, media_id, auth.user().id).await?;
 
-    let res = EncodableMediaWithMetadata {
+    let res = EncodableMediaDetails {
         media: media.into(),
         metadata: metadata.map(|m| m.into()),
+        progress: progress.map(|p| p.into()),
     };
 
     Ok(Json(res))
@@ -161,19 +164,6 @@ pub struct PatchMetadata {
     pub genres: Option<Vec<String>>,
 }
 
-// I don't like this but its whatever
-impl PatchMetadata {
-    pub fn is_empty(&self) -> bool {
-        self.authors.is_none()
-            && self.publisher.is_none()
-            && self.isbn.is_none()
-            && self.language.is_none()
-            && self.published_at.is_none()
-            && self.genres.is_none()
-            && self.description.is_none()
-    }
-}
-
 #[derive(Deserialize, utoipa::ToSchema)]
 pub struct PatchRequest {
     /// Name of the media item.
@@ -202,7 +192,7 @@ pub struct PatchRequest {
     ),
     request_body = inline(PatchRequest),
     responses(
-        (status = 200, description = "Successfully updated media information", body = inline(EncodableMediaWithMetadata)),
+        (status = 200, description = "Successfully updated media information", body = inline(EncodableMediaDetails)),
         (status = 404, description = "Media not found"),
         (status = 500, description = "Internal server error")
     )
@@ -211,7 +201,7 @@ async fn patch_media(
     Path(media_id): Path<i32>,
     State(app): State<AppState>,
     Json(body): Json<PatchRequest>,
-) -> AppResult<Json<EncodableMediaWithMetadata>> {
+) -> AppResult<Json<EncodableMediaDetails>> {
     let mut conn = app.db().await?;
 
     let downloaded_cover = if let Some(cover_url) = &body.cover_url {
@@ -266,30 +256,26 @@ async fn patch_media(
             }
 
             let metadata = if let Some(metadata) = &body.metadata {
-                if metadata.is_empty() {
-                    tracing::debug!(%media_id, "Metadata is empty, skipping");
-                    None
-                } else {
-                    let changes = UpdateMediaMetadata {
-                        authors: metadata.authors.clone(),
-                        publisher: metadata.publisher.clone(),
-                        isbn: metadata.isbn.clone(),
-                        language: metadata.language.clone(),
-                        published_at: metadata.published_at,
-                        description: metadata.description.clone(),
-                        genres: metadata.genres.clone(),
-                    };
+                let changes = UpdateMediaMetadata {
+                    authors: metadata.authors.clone(),
+                    publisher: metadata.publisher.clone(),
+                    isbn: metadata.isbn.clone(),
+                    language: metadata.language.clone(),
+                    published_at: metadata.published_at,
+                    description: metadata.description.clone(),
+                    genres: metadata.genres.clone(),
+                };
 
-                    tracing::debug!(%media_id, ?changes, "Updating metadata");
-                    Some(changes.upsert(conn, m.id).await?)
-                }
+                tracing::debug!(%media_id, ?changes, "Updating metadata");
+                Some(changes.upsert(conn, m.id).await?)
             } else {
                 None
             };
 
-            let res = EncodableMediaWithMetadata {
+            let res = EncodableMediaDetails {
                 media: m.into(),
                 metadata: metadata.map(EncodableMetadata::from),
+                progress: None,
             };
 
             Ok(Json(res))

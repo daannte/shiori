@@ -10,9 +10,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
 	import Dialog from '$lib/components/dialog.svelte';
+	import Progress from '$lib/components/ui/progress/progress.svelte';
 
 	import Download from '@lucide/svelte/icons/download';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Check from '@lucide/svelte/icons/check';
 	import { resolve } from '$app/paths';
 	import { format } from 'date-fns';
 
@@ -77,7 +79,9 @@
 		try {
 			let res = await client.DELETE('/api/v1/media/{id}', { params: { path: { id: data.id } } });
 			if (res.error || res.data) throw new Error();
-			goto(resolve('/'));
+			goto(
+				resolve('/(app)/libraries/[library_id]/media', { library_id: data.library_id.toString() })
+			);
 		} catch (e) {
 			console.error('Failed to delete media');
 		} finally {
@@ -113,7 +117,23 @@
 
 		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
 
-		<div class="mt-4 flex gap-2">
+		{#if data.progress}
+			<div class="mt-2 flex items-center gap-2">
+				{#if data.progress.completed}
+					<div class="flex items-center gap-2 text-sm text-muted-foreground">
+						<Check size={18} />
+						<span>Completed</span>
+					</div>
+				{:else}
+					<Progress value={data.progress.percentage_completed} max={1} class="w-40" />
+					<span class="text-sm text-muted-foreground">
+						{Math.round(data.progress.percentage_completed * 100)}%
+					</span>
+				{/if}
+			</div>
+		{/if}
+
+		<div class="mt-2 flex gap-2">
 			<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
 			<Button size="icon" variant="outline"><Download /></Button>
 			<Dialog

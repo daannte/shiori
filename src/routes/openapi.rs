@@ -11,20 +11,21 @@ use utoipa::{
 };
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::routes::api;
+use crate::routes::{api, koreader};
 
 #[derive(OpenApi)]
 #[openapi(
     info(title = "Shiori", description = "TODO"),
     modifiers(&SecurityAddon),
     tags(
-        (name = tags::LIBRARY, description = "Library resources and operations"),
-        (name = tags::MEDIA, description = "Media management and processing"),
-        (name = tags::METADATA, description = "Metadata and informational resources"),
+        (name = tags::LIBRARY, description = "Library resources"),
+        (name = tags::MEDIA, description = "Media management"),
+        (name = tags::METADATA, description = "Metadata resouces"),
         (name = tags::AUTH, description = "Authentication and authorization"),
-        (name = tags::FILESYSTEM, description = "File storage and filesystem operations"),
-        (name = tags::SYSTEM, description = "System state and utility operations"),
-        (name = tags::TOKENS, description = "Management of API tokens")
+        (name = tags::TOKENS, description = "Management of API tokens"),
+        (name = tags::FILESYSTEM, description = "Filesystem operations"),
+        (name = tags::SYSTEM, description = "System state"),
+        (name = tags::KOREADER, description = "KOReader synchronization")
     )
 )]
 pub struct BaseOpenApi;
@@ -38,7 +39,10 @@ impl BaseOpenApi {
     }
 
     pub fn build() -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
-        Self::router().merge(api::mount()).split_for_parts()
+        Self::router()
+            .merge(api::mount())
+            .merge(koreader::mount())
+            .split_for_parts()
     }
 }
 
@@ -73,4 +77,5 @@ pub mod tags {
     pub const FILESYSTEM: &str = "filesystem";
     pub const SYSTEM: &str = "system";
     pub const TOKENS: &str = "tokens";
+    pub const KOREADER: &str = "koreader";
 }

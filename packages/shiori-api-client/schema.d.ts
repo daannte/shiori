@@ -270,6 +270,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/koreader/{token}/syncs/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save koreader progress. */
+        put: operations["update_progress"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/koreader/{token}/syncs/progress/{document}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve koreader progress. */
+        get: operations["get_progress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/koreader/{token}/users/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Authorize koreader sync user. */
+        get: operations["authorize"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -421,6 +472,37 @@ export interface components {
              * @example Yen On
              */
             publisher?: string | null;
+        };
+        ReadingProgress: {
+            /**
+             * @description Indicates whether this media has been fully read by the user.
+             * @example false
+             */
+            completed: boolean;
+            /**
+             * Format: date-time
+             * @description Timestamp of when the media was completed.
+             * @example 2026-05-24T17:21:12Z
+             */
+            completed_at?: string | null;
+            /**
+             * Format: double
+             * @description Reading progress as a percentage of completion.
+             * @example 0.986
+             */
+            percentage_completed: number;
+            /**
+             * Format: date-time
+             * @description Timestamp of when this progress started.
+             * @example 2026-03-24T16:33:19Z
+             */
+            started_at: string;
+            /**
+             * Format: date-time
+             * @description Timestamp of when this progrses was updated.
+             * @example 2026-05-24T17:21:12Z
+             */
+            updated_at: string;
         };
     };
     responses: never;
@@ -918,52 +1000,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /**
-                         * @description Endpoint where the cover is stored.
-                         * @example /api/v1/media/4/cover
-                         */
-                        cover_path?: string | null;
-                        /**
-                         * Format: date-time
-                         * @description Timestamp of when the media was created.
-                         * @example 2026-03-23T12:00:00Z
-                         */
-                        created_at: string;
-                        /**
-                         * @description File extension of the media.
-                         * @example epub
-                         */
-                        extension: string;
-                        /**
-                         * Format: int32
-                         * @description Unique identifier for the media item.
-                         * @example 86
-                         */
-                        id: number;
-                        /**
-                         * Format: int32
-                         * @description Library this media belongs to.
-                         * @example 2
-                         */
-                        library_id: number;
-                        /**
-                         * @description Name of the media file, excluding extension.
-                         * @example 86_Volume_1
-                         */
-                        name: string;
-                        /**
-                         * @description File system path where the media is stored.
-                         * @example /data/books/light_novels/86_Volume_1.epub
-                         */
-                        path: string;
-                        /**
-                         * Format: int64
-                         * @description Size of the media file in bytes.
-                         * @example 102400
-                         */
-                        size: number;
-                    }[];
+                    "application/json": (components["schemas"]["Media"] & {
+                        metadata?: null | components["schemas"]["MediaMetadata"];
+                        progress?: null | components["schemas"]["ReadingProgress"];
+                    })[];
                 };
             };
             /** @description Library not found */
@@ -1090,7 +1130,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successfully fetched media cover */
+            /** @description Successfully fetched media */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1098,6 +1138,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Media"] & {
                         metadata?: null | components["schemas"]["MediaMetadata"];
+                        progress?: null | components["schemas"]["ReadingProgress"];
                     };
                 };
             };
@@ -1188,6 +1229,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Media"] & {
                         metadata?: null | components["schemas"]["MediaMetadata"];
+                        progress?: null | components["schemas"]["ReadingProgress"];
                     };
                 };
             };
@@ -1617,6 +1659,125 @@ export interface operations {
             };
             /** @description Internal server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_progress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Name of the Koreader device that the progress is being tracked on. */
+                    device: string;
+                    /** @description Unique device identifier (UUID) assigned by Koreader to the specific device. */
+                    device_id: string;
+                    /** @description Hash of the book in the Koreader system. */
+                    document: string;
+                    /**
+                     * Format: double
+                     * @description Reading progress as a percentage of completion.
+                     */
+                    percentage: number;
+                    /**
+                     * @description Current position in the book. There are two types of progress measurement:
+                     *         - A page number (for paginated books).
+                     *         - An x-pointer (for DOM-based books, using their scrolling reader).
+                     */
+                    progress: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully saved progress */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Media not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_progress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Hash of the book in the Koreader system */
+                document: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully retrieved progress */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        device: string;
+                        device_id: string;
+                        percentage: string;
+                        progress: string;
+                        /**
+                         * Format: int64
+                         * @description Timestamp of the progress update, in Unix epoch time.
+                         */
+                        timestamp: number;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authorize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully authorized user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

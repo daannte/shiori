@@ -1,6 +1,7 @@
+use bigdecimal::BigDecimal;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
-use shiori_database::models::{ApiToken, Library, Media, MediaMetadata, User};
+use shiori_database::models::{ApiToken, Library, Media, MediaMetadata, ReadingProgress, User};
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(as = Library)]
@@ -206,6 +207,42 @@ impl From<ApiToken> for EncodableApiToken {
 }
 
 #[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(as = ReadingProgress)]
+pub struct EncodableReadingProgress {
+    /// Reading progress as a percentage of completion.
+    #[schema(value_type = f64, examples(0.986))]
+    pub percentage_completed: Option<BigDecimal>,
+
+    /// Timestamp of when this progress started.
+    #[schema(examples("2026-03-24T16:33:19Z"))]
+    pub started_at: DateTime<Utc>,
+
+    /// Timestamp of when this progrses was updated.
+    #[schema(examples("2026-05-24T17:21:12Z"))]
+    pub updated_at: DateTime<Utc>,
+
+    /// Indicates whether this media has been fully read by the user.
+    #[schema(examples(false))]
+    pub completed: bool,
+
+    /// Timestamp of when the media was completed.
+    #[schema(examples("2026-05-24T17:21:12Z"))]
+    pub completed_at: Option<DateTime<Utc>>,
+}
+
+impl From<ReadingProgress> for EncodableReadingProgress {
+    fn from(r: ReadingProgress) -> Self {
+        Self {
+            percentage_completed: r.percentage_completed,
+            started_at: r.started_at,
+            updated_at: r.updated_at,
+            completed: r.completed,
+            completed_at: r.completed_at,
+        }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EncodableApiTokenWithToken {
     /// The token information.
     #[serde(flatten)]
@@ -217,10 +254,21 @@ pub struct EncodableApiTokenWithToken {
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]
-pub struct EncodableMediaWithMetadata {
+pub struct EncodableMediaDetails {
     #[serde(flatten)]
     pub media: EncodableMedia,
     pub metadata: Option<EncodableMetadata>,
+    pub progress: Option<EncodableReadingProgress>,
+}
+
+impl From<(Media, Option<ReadingProgress>)> for EncodableMediaDetails {
+    fn from((media, progress): (Media, Option<ReadingProgress>)) -> Self {
+        Self {
+            media: media.into(),
+            progress: progress.map(|p| p.into()),
+            metadata: None,
+        }
+    }
 }
 
 #[derive(Default, Serialize, Deserialize, utoipa::ToSchema)]

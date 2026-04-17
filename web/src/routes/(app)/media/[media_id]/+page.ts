@@ -11,7 +11,7 @@ export const load: PageLoad = async ({ fetch, params, depends }) => {
 
 	const mediaId = parseInt(params.media_id);
 	if (isNaN(mediaId)) {
-		throw error(400, { message: 'Invalid media id' });
+		error(400, { message: 'Invalid media id' });
 	}
 
 	const media = await loadMedia(client, mediaId);

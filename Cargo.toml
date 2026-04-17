@@ -14,7 +14,8 @@ insta.opt-level = 3
 argon2 = "0.6.0-rc.8"
 axum-extra = { version = "0.12.5", features = ["cookie", "erased-json"] }
 axum_typed_multipart = "0.16.5"
-axum = { version = "0.8.8", features = ["multipart"] }
+axum = { version = "0.8.8", features = ["multipart", "macros"] }
+bigdecimal = { version = "0.4.10", features = ["serde"] }
 chrono = { version = "0.4.44", default-features = false, features = ["serde"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 diesel = { version = "2.3.7", features = ["chrono", "postgres"] }

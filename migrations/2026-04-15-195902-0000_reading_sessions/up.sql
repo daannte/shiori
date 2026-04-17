@@ -1,0 +1,12 @@
+CREATE TABLE reading_sessions (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  media_id INTEGER NOT NULL REFERENCES media(id) ON DELETE CASCADE,
+  device_id TEXT,
+  koreader_progress TEXT,
+  percentage_completed NUMERIC(5, 4),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (user_id, media_id)
+)

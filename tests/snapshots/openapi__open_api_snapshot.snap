@@ -651,81 +651,36 @@ expression: newest.to_pretty_json().unwrap()
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "required": [
-                      "id",
-                      "name",
-                      "size",
-                      "path",
-                      "extension",
-                      "created_at",
-                      "library_id"
-                    ],
-                    "properties": {
-                      "cover_path": {
-                        "type": [
-                          "string",
-                          "null"
-                        ],
-                        "description": "Endpoint where the cover is stored.",
-                        "examples": [
-                          "/api/v1/media/4/cover"
-                        ]
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Media"
                       },
-                      "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "description": "Timestamp of when the media was created.",
-                        "examples": [
-                          "2026-03-23T12:00:00Z"
-                        ]
-                      },
-                      "extension": {
-                        "type": "string",
-                        "description": "File extension of the media.",
-                        "examples": [
-                          "epub"
-                        ]
-                      },
-                      "id": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Unique identifier for the media item.",
-                        "examples": [
-                          86
-                        ]
-                      },
-                      "library_id": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "Library this media belongs to.",
-                        "examples": [
-                          2
-                        ]
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Name of the media file, excluding extension.",
-                        "examples": [
-                          "86_Volume_1"
-                        ]
-                      },
-                      "path": {
-                        "type": "string",
-                        "description": "File system path where the media is stored.",
-                        "examples": [
-                          "/data/books/light_novels/86_Volume_1.epub"
-                        ]
-                      },
-                      "size": {
-                        "type": "integer",
-                        "format": "int64",
-                        "description": "Size of the media file in bytes.",
-                        "examples": [
-                          "102400"
-                        ]
+                      {
+                        "type": "object",
+                        "properties": {
+                          "metadata": {
+                            "oneOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "$ref": "#/components/schemas/MediaMetadata"
+                              }
+                            ]
+                          },
+                          "progress": {
+                            "oneOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "$ref": "#/components/schemas/ReadingProgress"
+                              }
+                            ]
+                          }
+                        }
                       }
-                    }
+                    ]
                   }
                 }
               }
@@ -918,7 +873,7 @@ expression: newest.to_pretty_json().unwrap()
         ],
         "responses": {
           "200": {
-            "description": "Successfully fetched media cover",
+            "description": "Successfully fetched media",
             "content": {
               "application/json": {
                 "schema": {
@@ -936,6 +891,16 @@ expression: newest.to_pretty_json().unwrap()
                             },
                             {
                               "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        },
+                        "progress": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ReadingProgress"
                             }
                           ]
                         }
@@ -1081,6 +1046,16 @@ expression: newest.to_pretty_json().unwrap()
                             },
                             {
                               "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        },
+                        "progress": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ReadingProgress"
                             }
                           ]
                         }
@@ -1738,6 +1713,145 @@ expression: newest.to_pretty_json().unwrap()
           }
         ]
       }
+    },
+    "/koreader/{token}/syncs/progress": {
+      "put": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Save koreader progress.",
+        "operationId": "update_progress",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document",
+                  "progress",
+                  "percentage",
+                  "device",
+                  "device_id"
+                ],
+                "properties": {
+                  "device": {
+                    "type": "string",
+                    "description": "Name of the Koreader device that the progress is being tracked on."
+                  },
+                  "device_id": {
+                    "type": "string",
+                    "description": "Unique device identifier (UUID) assigned by Koreader to the specific device."
+                  },
+                  "document": {
+                    "type": "string",
+                    "description": "Hash of the book in the Koreader system."
+                  },
+                  "percentage": {
+                    "type": "number",
+                    "format": "double",
+                    "description": "Reading progress as a percentage of completion."
+                  },
+                  "progress": {
+                    "type": "string",
+                    "description": "Current position in the book. There are two types of progress measurement:\n    - A page number (for paginated books).\n    - An x-pointer (for DOM-based books, using their scrolling reader)."
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successfully saved progress"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Media not found"
+          }
+        }
+      }
+    },
+    "/koreader/{token}/syncs/progress/{document}": {
+      "get": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Retrieve koreader progress.",
+        "operationId": "get_progress",
+        "parameters": [
+          {
+            "name": "document",
+            "in": "path",
+            "description": "Hash of the book in the Koreader system",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "device",
+                    "device_id",
+                    "percentage",
+                    "progress",
+                    "timestamp"
+                  ],
+                  "properties": {
+                    "device": {
+                      "type": "string"
+                    },
+                    "device_id": {
+                      "type": "string"
+                    },
+                    "percentage": {
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "int64",
+                      "description": "Timestamp of the progress update, in Unix epoch time.",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/koreader/{token}/users/auth": {
+      "get": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Authorize koreader sync user.",
+        "operationId": "authorize",
+        "responses": {
+          "200": {
+            "description": "Successfully authorized user"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2053,6 +2167,59 @@ expression: newest.to_pretty_json().unwrap()
             ]
           }
         }
+      },
+      "ReadingProgress": {
+        "type": "object",
+        "required": [
+          "percentage_completed",
+          "started_at",
+          "updated_at",
+          "completed"
+        ],
+        "properties": {
+          "completed": {
+            "type": "boolean",
+            "description": "Indicates whether this media has been fully read by the user.",
+            "examples": [
+              false
+            ]
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the media was completed.",
+            "examples": [
+              "2026-05-24T17:21:12Z"
+            ]
+          },
+          "percentage_completed": {
+            "type": "number",
+            "format": "double",
+            "description": "Reading progress as a percentage of completion.",
+            "examples": [
+              0.986
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when this progress started.",
+            "examples": [
+              "2026-03-24T16:33:19Z"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when this progrses was updated.",
+            "examples": [
+              "2026-05-24T17:21:12Z"
+            ]
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -2073,31 +2240,35 @@ expression: newest.to_pretty_json().unwrap()
   "tags": [
     {
       "name": "library",
-      "description": "Library resources and operations"
+      "description": "Library resources"
     },
     {
       "name": "media",
-      "description": "Media management and processing"
+      "description": "Media management"
     },
     {
       "name": "metadata",
-      "description": "Metadata and informational resources"
+      "description": "Metadata resouces"
     },
     {
       "name": "auth",
       "description": "Authentication and authorization"
     },
     {
+      "name": "tokens",
+      "description": "Management of API tokens"
+    },
+    {
       "name": "filesystem",
-      "description": "File storage and filesystem operations"
+      "description": "Filesystem operations"
     },
     {
       "name": "system",
-      "description": "System state and utility operations"
+      "description": "System state"
     },
     {
-      "name": "tokens",
-      "description": "Management of API tokens"
+      "name": "koreader",
+      "description": "KOReader synchronization"
     }
   ]
 }

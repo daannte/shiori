@@ -1,5 +1,5 @@
 <script lang="ts">
-	import FilePlusCorner from '@lucide/svelte/icons/file-plus-corner';
+	import CloudUpload from '@lucide/svelte/icons/cloud-upload';
 	import { Button } from '../ui/button';
 
 	interface Props {
@@ -38,7 +38,7 @@
 	}}
 >
 	<div class="flex flex-col items-center text-sm">
-		<FilePlusCorner class="text-muted-foreground" size={48} />
+		<CloudUpload class="text-muted-foreground" size={48} />
 
 		<div class="mt-2 text-center">
 			<p>Drag & drop files here or</p>
