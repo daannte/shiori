@@ -134,5 +134,8 @@ jobs:
             ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
+      - name: Dependencies
+        run: bun install
+
       - name: Test
         run: bun --bun run -F @shiori/api-client test 
