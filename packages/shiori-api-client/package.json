@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "gen": "vitest schema.test.ts --run --update"
+    "gen": "vitest schema.test.ts --run --update",
+    "test": "vitest"
   },
   "dependencies": {
     "openapi-fetch": "^0.17.0"
