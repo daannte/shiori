@@ -1,9 +1,11 @@
 <script lang="ts">
+	import type { Token } from './columns';
+
 	import { getCoreRowModel } from '@tanstack/table-core';
 
-	import * as Table from '../ui/table';
 	import { createSvelteTable, FlexRender } from '../ui/data-table';
-	import { columns, type Token } from './columns';
+	import * as Table from '../ui/table';
+	import { columns } from './columns';
 
 	let { data }: { data: Token[] } = $props();
 

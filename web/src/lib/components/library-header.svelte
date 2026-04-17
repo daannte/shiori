@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Button } from './ui/button';
-
 	import Upload from '@lucide/svelte/icons/upload';
+	import { Button } from './ui/button';
 
 	interface Props {
 		isOpen: boolean;

@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
-	import MinusIcon from '@lucide/svelte/icons/minus';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
+	import type { WithoutChildrenOrChild } from '$lib/utils.js';
 	import type { Snippet } from 'svelte';
+
+	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+
+	import { cn } from '$lib/utils.js';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import MinusIcon from '@lucide/svelte/icons/minus';
 
 	let {
 		ref = $bindable(null),

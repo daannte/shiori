@@ -1,8 +1,11 @@
-import { createClient, type operations } from '@shiori/api-client';
+import type { operations } from '@shiori/api-client';
 import type { LayoutLoad } from './$types';
-import { error, redirect } from '@sveltejs/kit';
-import { loadUser } from '$lib/session.svelte';
+
 import { resolve } from '$app/paths';
+import { createClient } from '@shiori/api-client';
+import { error, redirect } from '@sveltejs/kit';
+
+import { loadUser } from '$lib/session.svelte';
 
 type LibrariesResponse =
 	operations['list_libraries']['responses']['200']['content']['application/json'];

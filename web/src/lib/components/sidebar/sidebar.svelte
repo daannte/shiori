@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 
-	import * as Sidebar from '$lib/components/ui/sidebar';
 	import * as Collapsible from '$lib/components/ui/collapsible';
-	import Logout from './logout.svelte';
-
+	import * as Sidebar from '$lib/components/ui/sidebar';
+	import BookText from '@lucide/svelte/icons/book-text';
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import House from '@lucide/svelte/icons/house';
-	import BookText from '@lucide/svelte/icons/book-text';
 	import Settings2 from '@lucide/svelte/icons/settings-2';
 	import { Button } from '../ui/button';
+	import Logout from './logout.svelte';
 
 	let { data } = $props();
 

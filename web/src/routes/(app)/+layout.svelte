@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as Sidebar from '$lib/components/ui/sidebar';
 	import AppSidebar from '$lib/components/sidebar/sidebar.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar';
 
 	let { data, children } = $props();
 </script>

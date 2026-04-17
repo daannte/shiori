@@ -1,8 +1,11 @@
-import { createClient, type operations } from '@shiori/api-client';
+import type { operations } from '@shiori/api-client';
 import type { PageLoad } from './$types';
-import { error, redirect } from '@sveltejs/kit';
-import { loadUser } from '$lib/session.svelte';
+
 import { resolve } from '$app/paths';
+import { createClient } from '@shiori/api-client';
+import { error, redirect } from '@sveltejs/kit';
+
+import { loadUser } from '$lib/session.svelte';
 
 type MetaResponse = operations['meta']['responses']['200']['content']['application/json'];
 

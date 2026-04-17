@@ -1,4 +1,6 @@
-import { createClient, type operations } from '@shiori/api-client';
+import type { operations } from '@shiori/api-client';
+
+import { createClient } from '@shiori/api-client';
 
 type User = operations['me']['responses']['200']['content']['application/json'];
 

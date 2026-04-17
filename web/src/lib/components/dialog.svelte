@@ -1,8 +1,10 @@
 <script lang="ts">
-	import * as Dialog from './ui/dialog';
-	import { Button, buttonVariants, type ButtonSize, type ButtonVariant } from './ui/button';
 	import type { Snippet } from 'svelte';
+	import type { ButtonSize, ButtonVariant } from './ui/button';
+
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+	import { Button, buttonVariants } from './ui/button';
+	import * as Dialog from './ui/dialog';
 
 	interface Props {
 		isOpen: boolean;

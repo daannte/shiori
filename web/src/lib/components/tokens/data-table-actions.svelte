@@ -1,9 +1,10 @@
 <script lang="ts">
-	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
+	import { invalidate } from '$app/navigation';
+	import { createClient } from '@shiori/api-client';
+
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { createClient } from '@shiori/api-client';
-	import { invalidate } from '$app/navigation';
+	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
 	import Dialog from '../dialog.svelte';
 
 	const client = createClient({ fetch });

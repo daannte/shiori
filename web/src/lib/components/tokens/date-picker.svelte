@@ -1,11 +1,14 @@
 <script lang="ts">
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import { cn } from '$lib/utils.js';
+	import type { DateValue } from '@internationalized/date';
+
+	import { getLocalTimeZone } from '@internationalized/date';
+	import { formatDate } from 'date-fns';
+
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { formatDate } from 'date-fns';
-	import { type DateValue, getLocalTimeZone } from '@internationalized/date';
+	import { cn } from '$lib/utils.js';
+	import CalendarIcon from '@lucide/svelte/icons/calendar';
 
 	let { date = $bindable() }: { date: DateValue | undefined } = $props();
 </script>

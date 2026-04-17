@@ -1,15 +1,15 @@
 <script lang="ts">
-	import MediaCard from '$lib/components/media-card.svelte';
-	import EmptyView from '$lib/components/empty-view.svelte';
+	import { invalidate } from '$app/navigation';
+	import { createClient } from '@shiori/api-client';
 
-	import BookText from '@lucide/svelte/icons/book-text';
-	import LibraryHeader from '$lib/components/library-header.svelte';
 	import Dialog from '$lib/components/dialog.svelte';
+	import EmptyView from '$lib/components/empty-view.svelte';
+	import LibraryHeader from '$lib/components/library-header.svelte';
+	import MediaCard from '$lib/components/media-card.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import Dropzone from '$lib/components/upload/dropzone.svelte';
 	import FilesList from '$lib/components/upload/files-list.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { createClient } from '@shiori/api-client';
-	import { invalidate } from '$app/navigation';
+	import BookText from '@lucide/svelte/icons/book-text';
 
 	let client = createClient({ fetch });
 
