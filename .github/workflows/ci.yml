@@ -42,7 +42,7 @@ jobs:
       - name: Install rustfmt
         run: rustup component add rustfmt
 
-      - name: Cache
+      - name: Cache rust
         uses: Swatinem/rust-cache@v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -65,6 +65,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install cargo-insta
         run: curl -LsSf https://insta.rs/install.sh | sh
