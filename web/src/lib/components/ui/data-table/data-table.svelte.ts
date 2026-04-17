@@ -1,11 +1,12 @@
-import {
-	type RowData,
-	type TableOptions,
-	type TableOptionsResolved,
-	type TableState,
-	type Updater,
-	createTable
+import type {
+	RowData,
+	TableOptions,
+	TableOptionsResolved,
+	TableState,
+	Updater
 } from '@tanstack/table-core';
+
+import { createTable } from '@tanstack/table-core';
 
 /**
  * Creates a reactive TanStack table object for Svelte.

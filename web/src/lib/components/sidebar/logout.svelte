@@ -3,9 +3,9 @@
 	import { resolve } from '$app/paths';
 	import { createClient } from '@shiori/api-client';
 
-	import * as Dialog from '../ui/dialog';
-	import { Button, buttonVariants } from '../ui/button';
 	import LogOut from '@lucide/svelte/icons/log-out';
+	import { Button, buttonVariants } from '../ui/button';
+	import * as Dialog from '../ui/dialog';
 
 	let client = createClient({ fetch });
 

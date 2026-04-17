@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createClient } from '@shiori/api-client';
 
+	import FolderPicker from '$lib/components/folder-picker/folder-picker.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Button } from '$lib/components/ui/button';
-	import FolderPicker from '$lib/components/folder-picker/folder-picker.svelte';
-
-	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Folder from '@lucide/svelte/icons/folder';
-	import { resolve } from '$app/paths';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 
 	let client = createClient({ fetch });
 

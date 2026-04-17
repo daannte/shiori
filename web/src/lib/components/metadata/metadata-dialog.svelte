@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { createClient, type operations } from '@shiori/api-client';
+	import type { operations } from '@shiori/api-client';
 
-	import { Button } from '../ui/button';
-	import { Label } from '../ui/label';
-	import { Input } from '../ui/input';
-	import SearchCard from './search-card.svelte';
-	import Dialog from '../dialog.svelte';
+	import { createClient } from '@shiori/api-client';
 
+	import Database from '@lucide/svelte/icons/database';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
-	import Database from '@lucide/svelte/icons/database';
+	import Dialog from '../dialog.svelte';
+	import { Button } from '../ui/button';
+	import { Input } from '../ui/input';
+	import { Label } from '../ui/label';
+	import SearchCard from './search-card.svelte';
 
 	type MetadataSearch =
 		operations['get_book_metadata']['responses']['200']['content']['application/json'];

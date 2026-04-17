@@ -1,22 +1,18 @@
 <script lang="ts">
-	import {
-		createClient,
-		get_cover_url,
-		type components,
-		type operations
-	} from '@shiori/api-client';
+	import type { components, operations } from '@shiori/api-client';
+
 	import { goto, invalidate } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { createClient, get_cover_url } from '@shiori/api-client';
+	import { format } from 'date-fns';
 
-	import { Button } from '$lib/components/ui/button';
-	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
 	import Dialog from '$lib/components/dialog.svelte';
+	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import Progress from '$lib/components/ui/progress/progress.svelte';
-
+	import Check from '@lucide/svelte/icons/check';
 	import Download from '@lucide/svelte/icons/download';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import Check from '@lucide/svelte/icons/check';
-	import { resolve } from '$app/paths';
-	import { format } from 'date-fns';
 
 	type PatchMetadata = components['schemas']['PatchMetadata'];
 	type MetadataSearch =

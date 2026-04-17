@@ -1,5 +1,7 @@
-import { createClient, type operations } from '@shiori/api-client';
+import type { operations } from '@shiori/api-client';
 import type { PageLoad } from './$types';
+
+import { createClient } from '@shiori/api-client';
 import { error } from '@sveltejs/kit';
 
 type Directories =

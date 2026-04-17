@@ -1,10 +1,14 @@
 <script lang="ts">
-	import { Calendar as CalendarPrimitive } from 'bits-ui';
-	import * as Calendar from './index.js';
-	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
-	import type { ButtonVariant } from '../button/button.svelte';
-	import { isEqualMonth, type DateValue } from '@internationalized/date';
+	import type { DateValue } from '@internationalized/date';
+	import type { WithoutChildrenOrChild } from '$lib/utils.js';
 	import type { Snippet } from 'svelte';
+	import type { ButtonVariant } from '../button/button.svelte';
+
+	import { isEqualMonth } from '@internationalized/date';
+	import { Calendar as CalendarPrimitive } from 'bits-ui';
+
+	import { cn } from '$lib/utils.js';
+	import * as Calendar from './index.js';
 
 	let {
 		ref = $bindable(null),

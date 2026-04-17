@@ -1,9 +1,8 @@
 <script lang="ts">
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import { Button, buttonVariants } from '../ui/button';
 	import * as Dialog from '../ui/dialog';
 	import FolderRow from './folder-row.svelte';
-	import { Button, buttonVariants } from '../ui/button';
-
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 
 	interface Props {
 		dirs: string[];

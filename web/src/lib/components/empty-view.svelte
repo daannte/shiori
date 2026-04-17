@@ -1,8 +1,8 @@
 <script lang="ts">
-	import * as Empty from '$lib/components/ui/empty';
-
-	import { type LucideIcon } from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
+
+	import * as Empty from '$lib/components/ui/empty';
+	import { type LucideIcon } from '@lucide/svelte';
 
 	interface Props {
 		title: string;
