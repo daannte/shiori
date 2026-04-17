@@ -1,0 +1,80 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  changed-files:
+    name: Changed Files 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
+        with:
+          files_yaml_from_source_file: .github/changed-files.yml
+
+    outputs:
+      backend-lint: ${{ steps.changed-files.outputs.backend_lint_any_modified }}
+      backend-test: ${{ steps.changed-files.outputs.backend_test_any_modified }}
+      web: ${{ steps.changed-files.outputs.web_any_modified }}
+      api-client-test: ${{ steps.changed-files.outputs.api_client_test_any_modified }}
+
+  backend-lint:
+    name: Backend / Lint
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.backend-lint == 'true'
+
+    env:
+      RUSTFLAGS: "-D warnings"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install clippy
+        run: rustup component add clippy
+
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features --workspace
+
+      - name: Rustfmt
+        run: cargo fmt --check --all 
+
+  backend-test:
+    name: Backend / Test
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.backend-test == 'true'
+
+    env:
+      RUSTFLAGS: "-D warnings"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install cargo-insta
+        run: curl -LsSf https://insta.rs/install.sh | sh
+
+      - name: Dependencies 
+        run: cargo fetch --locked
+
+      - name: Build
+        run: cargo build --tests --workspace
+
+      - name: Tests 
+        run: cargo insta test --require-full-match --unreferenced=reject --workspace
+
