@@ -76,9 +76,7 @@ async fn update_progress(
 ) -> AppResult<()> {
     tracing::debug!(progress = ?body, "Progress request update");
 
-    let one = BigDecimal::from(1);
-
-    if body.percentage < BigDecimal::from(0) || body.percentage > one {
+    if body.percentage < 0 || body.percentage > 1 {
         tracing::error!("Invalid percentage provided for progress request");
         return Err(bad_request("Invalid percentage"));
     }
@@ -89,7 +87,7 @@ async fn update_progress(
 
     let media = Media::find_by_koreader_hash(&mut conn, &body.document).await?;
 
-    let completed = percentage == one;
+    let completed = percentage == 1;
 
     let progress = UpdateReadingProgress {
         user_id: user.id,
@@ -103,9 +101,8 @@ async fn update_progress(
     };
 
     // NOTE: I'll leave it to 404 for now if the book is complete
-    let saved = progress.upsert(&mut conn).await.map_err(|e| {
-        tracing::error!("Book is already complete");
-        e
+    let saved = progress.upsert(&conn).await.inspect_err(|e| {
+        tracing::error!(error = ?e, "Assuming book is complete");
     })?;
 
     tracing::debug!(progress = ?saved, "Updated reading progress");

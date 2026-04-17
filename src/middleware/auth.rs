@@ -63,7 +63,7 @@ pub async fn url_auth_middleware(
 
     req.extensions_mut().insert(AuthContext::Token(token.hash));
 
-    return Ok(next.run(req).await);
+    Ok(next.run(req).await)
 }
 
 #[derive(Clone)]
