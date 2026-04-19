@@ -3,16 +3,15 @@
 
 	import { goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import Check from '@lucide/svelte/icons/check';
+	import Download from '@lucide/svelte/icons/download';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { createClient, get_cover_url } from '@shiori/api-client';
+	import { Button, Progress } from '@shiori/components';
 	import { format } from 'date-fns';
 
 	import Dialog from '$lib/components/dialog.svelte';
 	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import Progress from '$lib/components/ui/progress/progress.svelte';
-	import Check from '@lucide/svelte/icons/check';
-	import Download from '@lucide/svelte/icons/download';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	type PatchMetadata = components['schemas']['PatchMetadata'];
 	type MetadataSearch =

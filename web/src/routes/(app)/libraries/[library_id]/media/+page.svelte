@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
+	import BookText from '@lucide/svelte/icons/book-text';
 	import { createClient } from '@shiori/api-client';
+	import { Button } from '@shiori/components';
 
 	import Dialog from '$lib/components/dialog.svelte';
 	import EmptyView from '$lib/components/empty-view.svelte';
 	import LibraryHeader from '$lib/components/library-header.svelte';
 	import MediaCard from '$lib/components/media-card.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import Dropzone from '$lib/components/upload/dropzone.svelte';
 	import FilesList from '$lib/components/upload/files-list.svelte';
-	import BookText from '@lucide/svelte/icons/book-text';
 
 	let client = createClient({ fetch });
 

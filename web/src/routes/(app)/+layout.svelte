@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { Sidebar } from '@shiori/components';
+
 	import AppSidebar from '$lib/components/sidebar/sidebar.svelte';
-	import * as Sidebar from '$lib/components/ui/sidebar';
 
 	let { data, children } = $props();
 </script>

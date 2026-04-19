@@ -9,7 +9,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "concurrently": "^9.2.1",
-    "@shiori/api-client": "workspace:*"
+    "@shiori/api-client": "workspace:*",
+    "@shiori/components": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

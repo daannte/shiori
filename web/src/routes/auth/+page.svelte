@@ -3,12 +3,10 @@
 
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createClient } from '@shiori/api-client';
-
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+	import { createClient } from '@shiori/api-client';
+	import { Button, Input, Label } from '@shiori/components';
+
 	import { loginSchema, registerSchema } from './schema';
 
 	let client = createClient({ fetch });

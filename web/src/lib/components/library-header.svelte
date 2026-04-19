@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Upload from '@lucide/svelte/icons/upload';
-	import { Button } from './ui/button';
+	import { Button } from '@shiori/components';
 
 	interface Props {
 		isOpen: boolean;

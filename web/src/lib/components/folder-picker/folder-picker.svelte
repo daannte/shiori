@@ -1,7 +1,8 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import { Button, buttonVariants } from '../ui/button';
-	import * as Dialog from '../ui/dialog';
+	import { Button } from '@shiori/components';
+
+	import Dialog from '$lib/components/dialog.svelte';
 	import FolderRow from './folder-row.svelte';
 
 	interface Props {
@@ -21,41 +22,38 @@
 	}: Props = $props();
 </script>
 
-<Dialog.Root bind:open={isOpen}>
-	<Dialog.Content showCloseButton={false}>
-		<Dialog.Header>
-			<Dialog.Title>Select Library Folder</Dialog.Title>
-			<Dialog.Description>Paths are relative to the application's base directory</Dialog.Description
-			>
-		</Dialog.Header>
-		<div class="flex items-center gap-2">
-			{#if parent != null}
-				<Button size="icon" onclick={() => (path = parent)}><ArrowLeft /></Button>
+<Dialog
+	title="Select Library Folder"
+	description="Paths are relative to the application's base directory"
+	bind:isOpen
+	onClose={() => {
+		isOpen = false;
+		path = selectedPath;
+	}}
+	onConfirm={() => {
+		isOpen = false;
+		selectedPath = path;
+	}}
+	confirmText="Select"
+	cancelVariant="secondary"
+	triggerSize="icon"
+	triggerVariant="ghost"
+>
+	<div class="flex items-center gap-2">
+		{#if parent != null}
+			<Button size="icon" onclick={() => (path = parent)}><ArrowLeft /></Button>
+		{/if}
+		<span class="w-full rounded-lg border-2 p-1 text-sm">
+			{#if path}
+				/{path}
+			{:else}
+				/
 			{/if}
-			<span class="w-full rounded-lg border-2 p-1 text-sm">
-				{#if path}
-					/{path}
-				{:else}
-					/
-				{/if}
-			</span>
-		</div>
-		<div class="mt-4 flex flex-col gap-2">
-			{#each dirs as dir (dir)}
-				<FolderRow {dir} onclick={(p: string) => (path = p)} />
-			{/each}
-		</div>
-		<Dialog.Footer>
-			<Dialog.Close
-				onclick={() => (path = selectedPath)}
-				class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close
-			>
-			<Button
-				onclick={() => {
-					selectedPath = path;
-					isOpen = false;
-				}}>Confirm</Button
-			>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+		</span>
+	</div>
+	<div class="mt-4 flex flex-col gap-2">
+		{#each dirs as dir (dir)}
+			<FolderRow {dir} onclick={(p: string) => (path = p)} />
+		{/each}
+	</div>
+</Dialog>

@@ -2,13 +2,11 @@
 	import type { DateValue } from '@internationalized/date';
 
 	import { getLocalTimeZone } from '@internationalized/date';
+	import CalendarIcon from '@lucide/svelte/icons/calendar';
+	import { Button, Calendar, Popover } from '@shiori/components';
 	import { formatDate } from 'date-fns';
 
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Calendar } from '$lib/components/ui/calendar/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { cn } from '$lib/utils.js';
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
 
 	let { date = $bindable() }: { date: DateValue | undefined } = $props();
 </script>

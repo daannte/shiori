@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import * as Empty from '$lib/components/ui/empty';
 	import { type LucideIcon } from '@lucide/svelte';
+	import { Empty } from '@shiori/components';
 
 	interface Props {
 		title: string;

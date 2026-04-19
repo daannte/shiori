@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CloudUpload from '@lucide/svelte/icons/cloud-upload';
-	import { Button } from '../ui/button';
+	import { Button } from '@shiori/components';
 
 	interface Props {
 		files: File[];

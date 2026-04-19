@@ -1,15 +1,13 @@
 <script lang="ts">
 	import type { operations } from '@shiori/api-client';
 
-	import { createClient } from '@shiori/api-client';
-
 	import Database from '@lucide/svelte/icons/database';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
+	import { createClient } from '@shiori/api-client';
+	import { Button, Input, Label } from '@shiori/components';
+
 	import Dialog from '../dialog.svelte';
-	import { Button } from '../ui/button';
-	import { Input } from '../ui/input';
-	import { Label } from '../ui/label';
 	import SearchCard from './search-card.svelte';
 
 	type MetadataSearch =

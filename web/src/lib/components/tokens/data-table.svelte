@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { Token } from './columns';
 
+	import { createSvelteTable, FlexRender, Table } from '@shiori/components';
 	import { getCoreRowModel } from '@tanstack/table-core';
 
-	import { createSvelteTable, FlexRender } from '../ui/data-table';
-	import * as Table from '../ui/table';
 	import { columns } from './columns';
 
 	let { data }: { data: Token[] } = $props();
