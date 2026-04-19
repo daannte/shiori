@@ -1,10 +1,6 @@
 <script lang="ts">
-	import type { WithoutChildrenOrChild } from '$lib/utils.js';
-
 	import { Progress as ProgressPrimitive } from 'bits-ui';
-
-	import { cn } from '$lib/utils.js';
-
+	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
 	let {
 		ref = $bindable(null),
 		class: className,
@@ -18,7 +14,7 @@
 	bind:ref
 	data-slot="progress"
 	class={cn(
-		'relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted',
+		'relative flex h-1.5 w-full items-center overflow-x-hidden rounded-full bg-muted',
 		className
 	)}
 	{value}

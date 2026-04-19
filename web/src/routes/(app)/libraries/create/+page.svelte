@@ -4,10 +4,9 @@
 	import Folder from '@lucide/svelte/icons/folder';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import { createClient } from '@shiori/api-client';
-	import { Button, Input } from '@shiori/components';
+	import { Button, Input, Label } from '@shiori/components';
 
 	import FolderPicker from '$lib/components/folder-picker/folder-picker.svelte';
-	import { Label } from '$lib/components/ui/label';
 
 	let client = createClient({ fetch });
 

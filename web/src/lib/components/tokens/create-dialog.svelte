@@ -5,10 +5,9 @@
 	import { getLocalTimeZone } from '@internationalized/date';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { createClient } from '@shiori/api-client';
-	import { Input } from '@shiori/components';
+	import { Input, Label } from '@shiori/components';
 
 	import Dialog from '../dialog.svelte';
-	import { Label } from '../ui/label';
 	import DatePicker from './date-picker.svelte';
 
 	let client = createClient({ fetch });

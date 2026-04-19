@@ -2,10 +2,9 @@
 	import type { operations } from '@shiori/api-client';
 
 	import { resolve } from '$app/paths';
-	import { get_cover_url } from '@shiori/api-client';
-
 	import Check from '@lucide/svelte/icons/check';
-	import { Progress } from './ui/progress';
+	import { get_cover_url } from '@shiori/api-client';
+	import { Progress } from '@shiori/components';
 
 	type Media = operations['get_media']['responses']['200']['content']['application/json'];
 

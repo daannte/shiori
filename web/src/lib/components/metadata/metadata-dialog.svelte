@@ -5,10 +5,9 @@
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
 	import { createClient } from '@shiori/api-client';
-	import { Button, Input } from '@shiori/components';
+	import { Button, Input, Label } from '@shiori/components';
 
 	import Dialog from '../dialog.svelte';
-	import { Label } from '../ui/label';
 	import SearchCard from './search-card.svelte';
 
 	type MetadataSearch =
