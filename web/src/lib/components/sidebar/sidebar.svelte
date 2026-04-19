@@ -76,6 +76,16 @@
 											</Sidebar.MenuSubButton>
 										</Sidebar.MenuSubItem>
 									{/each}
+									<Sidebar.MenuSubItem>
+										<Sidebar.MenuSubButton
+											class="flex justify-center border-2 border-dashed text-muted-foreground"
+											isActive={isActive(`/libraries/create`)}
+										>
+											{#snippet child({ props })}
+												<a href={resolve('/(app)/libraries/create')} {...props}> Create Library </a>
+											{/snippet}
+										</Sidebar.MenuSubButton>
+									</Sidebar.MenuSubItem>
 								</Sidebar.MenuSub>
 							</Collapsible.Content>
 						</Sidebar.MenuItem>
