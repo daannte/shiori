@@ -433,7 +433,7 @@ export interface components {
              * @description Date the media was published.
              * @example 2019-03-26
              */
-            published_at?: string | null;
+            published?: string | null;
             /**
              * @description Name of the publisher or publishing organization.
              * @example Yen On
@@ -466,7 +466,7 @@ export interface components {
              * @description Date the media was published.
              * @example 2019-03-26
              */
-            published_at?: string | null;
+            published?: string | null;
             /**
              * @description Name of the publisher or publishing organization.
              * @example Yen On
@@ -1377,7 +1377,7 @@ export interface operations {
                          * @description Date the media was published.
                          * @example 2019-03-26
                          */
-                        published_at?: string | null;
+                        published?: string | null;
                         /**
                          * @description Name of the publisher or publishing organization.
                          * @example Yen On
@@ -1469,7 +1469,7 @@ export interface operations {
                          * @description Date the media was published.
                          * @example 2019-03-26
                          */
-                        published_at?: string | null;
+                        published?: string | null;
                         /**
                          * @description Name of the publisher or publishing organization.
                          * @example Yen On

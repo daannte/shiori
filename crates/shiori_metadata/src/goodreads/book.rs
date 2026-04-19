@@ -93,7 +93,7 @@ pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
             .and_then(Value::as_str)
             .map(String::from);
 
-        metadata.published_at = details
+        metadata.published = details
             .get("publicationTime")
             .and_then(|time| time.as_i64())
             .and_then(DateTime::from_timestamp_millis)

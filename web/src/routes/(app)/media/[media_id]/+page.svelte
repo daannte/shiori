@@ -36,7 +36,7 @@
 	function formatValue(key: string, value: string | string[] | null) {
 		if (!value) return 'Unknown';
 
-		if (key === 'published_at' && typeof value === 'string') {
+		if (key === 'published' && typeof value === 'string') {
 			return format(value, 'PPP');
 		}
 

@@ -109,7 +109,7 @@ pub struct EncodableMetadata {
 
     /// Date the media was published.
     #[schema(examples("2019-03-26"))]
-    pub published_at: Option<NaiveDate>,
+    pub published: Option<NaiveDate>,
 
     /// Description of the media item.
     #[schema(examples("The San Magnolia Republic..."))]
@@ -127,7 +127,7 @@ impl From<MediaMetadata> for EncodableMetadata {
             publisher: metadata.publisher,
             isbn: metadata.isbn,
             language: metadata.language,
-            published_at: metadata.published_at,
+            published: metadata.published,
             description: metadata.description,
             genres: metadata.genres,
         }
@@ -296,7 +296,7 @@ pub struct EncodableMetadataSearch {
 
     /// Date the media was published.
     #[schema(examples("2019-03-26"))]
-    pub published_at: Option<NaiveDate>,
+    pub published: Option<NaiveDate>,
 
     /// URL of the cover image associated with the media.
     #[schema(examples("https://example.com/cover.jpg"))]

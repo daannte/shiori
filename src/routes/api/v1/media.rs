@@ -153,7 +153,7 @@ pub struct PatchMetadata {
 
     /// Date the media was published.
     #[schema(examples("2019-03-26"))]
-    pub published_at: Option<NaiveDate>,
+    pub published: Option<NaiveDate>,
 
     /// Description of the media item.
     #[schema(examples("The San Magnolia Republic..."))]
@@ -261,7 +261,7 @@ async fn patch_media(
                     publisher: metadata.publisher.clone(),
                     isbn: metadata.isbn.clone(),
                     language: metadata.language.clone(),
-                    published_at: metadata.published_at,
+                    published: metadata.published,
                     description: metadata.description.clone(),
                     genres: metadata.genres.clone(),
                 };
