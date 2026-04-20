@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { operations } from '@shiori/api-client';
 
-	import Database from '@lucide/svelte/icons/database';
+	import Edit2 from '@lucide/svelte/icons/edit-2';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Search from '@lucide/svelte/icons/search';
 	import { createClient } from '@shiori/api-client';
@@ -80,7 +80,7 @@
 	hideFooter
 >
 	{#snippet trigger()}
-		<Database />
+		<Edit2 />
 	{/snippet}
 
 	{#snippet children()}

@@ -1,21 +1,22 @@
-export {
-	Button,
-	buttonVariants,
-	type ButtonProps,
-	type ButtonSize,
-	type ButtonVariant
-} from './button/index.js';
 export { Input } from './input/index.js';
 export { Skeleton } from './skeleton/index.js';
 export { Separator } from './separator/index.js';
 export { Calendar } from './calendar/index.js';
 export { Label } from './label/index.js';
 export { Progress } from './progress/index.js';
+export { Badge, badgeVariants, type BadgeVariant } from "./badge/index.js"
 export {
-	FlexRender,
-	renderComponent,
-	renderSnippet,
-	createSvelteTable
+  Button,
+  buttonVariants,
+  type ButtonProps,
+  type ButtonSize,
+  type ButtonVariant
+} from './button/index.js';
+export {
+  FlexRender,
+  renderComponent,
+  renderSnippet,
+  createSvelteTable
 } from './data-table/index.js';
 
 export * as Accordion from './accordion/index.js';

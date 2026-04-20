@@ -7,11 +7,12 @@
 	import Download from '@lucide/svelte/icons/download';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { createClient, get_cover_url } from '@shiori/api-client';
-	import { Button, Progress } from '@shiori/components';
+	import { Badge, Button, Progress } from '@shiori/components';
 	import { format } from 'date-fns';
 
 	import Dialog from '$lib/components/dialog.svelte';
 	import MetadataDialog from '$lib/components/metadata/metadata-dialog.svelte';
+	import ReadMore from '$lib/components/read-more.svelte';
 
 	type PatchMetadata = components['schemas']['PatchMetadata'];
 	type MetadataSearch =
@@ -34,13 +35,13 @@
 	);
 
 	function formatValue(key: string, value: string | string[] | null) {
-		if (!value) return 'Unknown';
+		if (!value) return '—';
 
 		if (key === 'published' && typeof value === 'string') {
 			return format(value, 'PPP');
 		}
 
-		return value;
+		return Array.isArray(value) ? value.join(', ') : value;
 	}
 
 	function labelize(key: string) {
@@ -85,84 +86,102 @@
 	}
 </script>
 
-<div class="flex h-screen flex-col xl:flex-row">
-	<div class="flex items-center justify-center p-4 md:flex-1 md:p-0">
-		<img
-			class="aspect-2/3 max-h-[40vh] w-auto rounded-xl object-contain md:max-h-[60vh]"
-			src={get_cover_url(data.cover_path) ?? ''}
-			alt={`${data.name} cover image`}
-		/>
-	</div>
-
-	<div class="flex flex-1 flex-col justify-center p-4 lg:pr-16">
-		<div class="flex flex-col gap-2">
-			<h1 class="font-serif text-xl md:text-3xl lg:text-4xl">
-				{data.name}
-			</h1>
-			<h2 class="text-base md:text-xl">
-				by <span class="font-medium">{data.metadata?.authors}</span>
-			</h2>
-
-			{#if data.metadata?.genres?.length}
-				<div class="text-sm text-muted-foreground">
-					{data.metadata.genres.join(', ')}
-				</div>
-			{/if}
+<div class="mx-auto max-w-4xl px-4 py-8 md:px-8 md:py-12">
+	<div class="flex flex-col items-center gap-8 md:gap-12 lg:flex-row lg:items-start">
+		<div class="shrink-0">
+			<div class="relative aspect-2/3 w-48 overflow-hidden rounded-lg shadow-lg md:w-64 lg:w-72">
+				<img
+					class="h-full w-full object-cover"
+					src={get_cover_url(data.cover_path) ?? '/placeholder-book.jpg'}
+					alt={`${data.name} cover`}
+				/>
+			</div>
 		</div>
 
-		<p class="mt-4 text-sm md:mt-8 md:text-base">{@html data.metadata?.description}</p>
+		<div class="flex flex-1 flex-col">
+			<div class="mb-4">
+				<h1 class="mb-2 font-serif text-3xl leading-tight font-bold md:text-4xl">
+					{data.name}
+				</h1>
+				<div class="flex flex-wrap items-center gap-1">
+					<span class="text-lg">by</span>
+					<span class="font-medium">{data.metadata?.authors}</span>
+				</div>
 
-		{#if data.progress}
-			<div class="mt-2 flex items-center gap-2">
-				{#if data.progress.completed}
-					<div class="flex items-center gap-2 text-sm text-muted-foreground">
-						<Check size={18} />
-						<span>Completed</span>
+				{#if data.metadata?.genres?.length}
+					<div class="mt-3 flex flex-wrap gap-2">
+						{#each data.metadata.genres as genre}
+							<Badge variant="secondary">{genre}</Badge>
+						{/each}
 					</div>
-				{:else}
-					<Progress value={data.progress.percentage_completed} max={1} class="w-40" />
-					<span class="text-sm text-muted-foreground">
-						{Math.round(data.progress.percentage_completed * 100)}%
-					</span>
 				{/if}
 			</div>
-		{/if}
 
-		<div class="mt-2 flex gap-2">
-			<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
-			<Button size="icon" variant="outline"><Download /></Button>
-			<Dialog
-				title={`Delete ${data.name}`}
-				description={`This action cannot be undone. ${data.name} will be permanently removed.`}
-				bind:isOpen={isDeleteOpen}
-				onClose={() => (isDeleteOpen = false)}
-				onConfirm={handleDelete}
-				cancelVariant="secondary"
-				confirmVariant="destructive"
-				confirmText="Delete"
-				triggerVariant="destructive"
-				triggerSize="icon"
-			>
-				{#snippet trigger()}
-					<Trash2 />
-				{/snippet}
-			</Dialog>
-			{#if metadataSearch}
-				<Button onclick={saveMetadata}>Save</Button>
+			{#if data.metadata?.description}
+				<ReadMore text={data.metadata?.description} class="text-base leading-relaxed md:text-lg" />
 			{/if}
-		</div>
 
-		<div class="my-4 border-t-2"></div>
+			{#if data.progress}
+				<div class="mb-4 flex items-center justify-center gap-2 rounded-lg bg-accent/50 p-2">
+					{#if data.progress.completed}
+						<div class="flex items-center gap-2 text-emerald-600">
+							<Check size={16} />
+							<span class="text-sm font-medium">Completed</span>
+						</div>
+					{:else}
+						<div class="flex w-full items-center gap-3">
+							<Progress value={data.progress.percentage_completed} max={1} />
+							<span class="text-xs font-medium tabular-nums">
+								{Math.round(data.progress.percentage_completed * 100)}%
+							</span>
+						</div>
+					{/if}
+				</div>
+			{/if}
 
-		<div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-[auto_1fr_auto_1fr] sm:gap-x-8">
-			{#each metadataArr as [label, value] (label)}
-				<span class="text-sm font-medium sm:text-base">
-					{labelize(label)}
-				</span>
-				<span class="text-sm wrap-break-word text-muted-foreground sm:text-base">
-					{formatValue(label, value)}
-				</span>
-			{/each}
+			<div class="mb-4 flex flex-wrap items-center gap-2 border-b-2 border-border pb-4">
+				<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
+
+				<Button size="icon" variant="ghost">
+					<Download size={18} />
+				</Button>
+
+				<Dialog
+					title={`Delete ${data.name}`}
+					description={`This action cannot be undone. ${data.name} will be permanently removed.`}
+					bind:isOpen={isDeleteOpen}
+					onClose={() => (isDeleteOpen = false)}
+					onConfirm={handleDelete}
+					cancelVariant="secondary"
+					confirmVariant="destructive"
+					confirmText="Delete"
+					triggerVariant="destructive"
+					triggerSize="icon"
+				>
+					{#snippet trigger()}
+						<Trash2 />
+					{/snippet}
+				</Dialog>
+
+				{#if metadataSearch}
+					<Button size="sm" onclick={saveMetadata} class="ml-auto">Save Changes</Button>
+				{/if}
+			</div>
+
+			{#if metadataArr.length}
+				<div class="grid grid-cols-2 gap-y-3">
+					{#each metadataArr as [label, value] (label)}
+						<div class="flex flex-col">
+							<span class="text-xs font-semibold tracking-wide uppercase sm:text-sm">
+								{labelize(label)}
+							</span>
+							<span class="mt-1 text-sm text-muted-foreground">
+								{formatValue(label, value)}
+							</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>
