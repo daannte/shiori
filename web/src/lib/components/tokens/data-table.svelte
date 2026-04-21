@@ -17,7 +17,7 @@
 	});
 </script>
 
-<div class="mt-4 rounded-lg border bg-accent p-2">
+<div class="mt-2 rounded-lg border bg-accent p-2">
 	<Table.Root>
 		<Table.Header>
 			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
