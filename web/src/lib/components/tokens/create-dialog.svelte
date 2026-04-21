@@ -62,10 +62,11 @@
 	confirmText={createdToken ? 'Copy' : 'Generate'}
 	cancelText={createdToken ? 'Done' : 'Cancel'}
 	cancelVariant={'secondary'}
+	triggerSize="sm"
 	{isLoading}
 >
 	{#snippet trigger()}
-		<Plus /> Generate New Token
+		<Plus /> New Token
 	{/snippet}
 
 	{#snippet children()}

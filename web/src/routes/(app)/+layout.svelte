@@ -7,9 +7,9 @@
 </script>
 
 <Sidebar.Provider>
-	<div class="flex h-full flex-1">
+	<div class="flex h-full flex-1 overflow-hidden">
 		<AppSidebar {data} />
-		<main class="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+		<main class="flex flex-1 flex-col overflow-y-auto">
 			<div class="flex flex-1 flex-col">
 				{@render children()}
 			</div>

@@ -9,8 +9,8 @@
 
 <div class="flex flex-row items-center justify-between">
 	<Label class="text-base md:text-lg">Appearance</Label>
-	<Select.Root type="single">
-		<Select.Trigger class="w-[180px]">
+	<Select.Root type="single" value={userPrefersMode.current}>
+		<Select.Trigger size="sm" class="w-24">
 			{mode}
 		</Select.Trigger>
 		<Select.Content>

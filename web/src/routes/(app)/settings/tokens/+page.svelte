@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Label } from '@shiori/components';
+
 	import CreateDialog from '$lib/components/tokens/create-dialog.svelte';
 	import DataTable from '$lib/components/tokens/data-table.svelte';
 
@@ -6,7 +8,7 @@
 </script>
 
 <div class="flex items-center justify-between">
-	<h1 class="text-lg font-medium md:text-xl">Tokens List</h1>
+	<Label class="text-base md:text-lg">Tokens List</Label>
 	<CreateDialog />
 </div>
 <DataTable data={data.tokens} />
