@@ -1,7 +1,6 @@
 use axum::{
     Json,
     extract::{Path, State},
-    middleware,
 };
 use bigdecimal::BigDecimal;
 use chrono::Utc;
@@ -12,7 +11,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, bad_request},
-    middleware::auth::{AuthUser, url_auth_middleware},
+    middleware::auth::AuthUser,
     routes::openapi::tags,
 };
 
@@ -21,7 +20,6 @@ pub fn mount() -> OpenApiRouter<AppState> {
         .routes(routes!(authorize))
         .routes(routes!(get_progress))
         .routes(routes!(update_progress))
-        .layer(middleware::from_fn(url_auth_middleware))
 }
 
 /// Authorize koreader sync user.

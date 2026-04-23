@@ -9,7 +9,7 @@ mod opds;
 pub mod openapi;
 
 pub fn build_axum_router(state: AppState) -> Router<()> {
-    let (router, openapi) = BaseOpenApi::build();
+    let (router, openapi) = BaseOpenApi::build(state.clone());
 
     router
         .merge(Redoc::with_url("/docs", openapi))

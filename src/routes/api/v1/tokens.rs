@@ -1,7 +1,6 @@
 use axum::{
     Json,
     extract::{Path, State},
-    middleware,
 };
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -15,7 +14,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, bad_request, not_found},
-    middleware::auth::{AuthUser, auth_middleware},
+    middleware::auth::AuthUser,
     routes::openapi::tags,
 };
 
@@ -23,7 +22,6 @@ pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create_token, list_tokens))
         .routes(routes!(delete_token))
-        .layer(middleware::from_fn(auth_middleware))
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]

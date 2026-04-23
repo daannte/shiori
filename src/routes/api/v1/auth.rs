@@ -1,4 +1,4 @@
-use axum::{Json, extract::State, http::StatusCode, middleware, response::IntoResponse};
+use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 use axum_extra::extract::CookieJar;
 use serde::Deserialize;
 use shiori_api_types::EncodableUser;
@@ -12,26 +12,21 @@ use crate::{
     auth::{hash_password, verify_password},
     config::state::AppState,
     errors::{AppResult, bad_request, server_error, unauthorized},
-    middleware::auth::{AuthUser, auth_middleware},
+    middleware::auth::AuthUser,
     routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
-    public().merge(private())
+    OpenApiRouter::new()
+        .routes(routes!(logout))
+        .routes(routes!(me))
 }
 
-fn public() -> OpenApiRouter<AppState> {
+pub fn mount_public() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(login))
         .routes(routes!(register))
         .routes(routes!(refresh_token))
-}
-
-fn private() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(logout))
-        .routes(routes!(me))
-        .layer(middleware::from_fn(auth_middleware))
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]

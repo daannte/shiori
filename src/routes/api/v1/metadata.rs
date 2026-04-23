@@ -1,4 +1,4 @@
-use axum::{Json, extract::Query, middleware};
+use axum::{Json, extract::Query};
 use serde::Deserialize;
 use shiori_api_types::EncodableMetadataSearch;
 use shiori_metadata::{GoodreadsProvider, provider::MetadataProvider};
@@ -8,14 +8,11 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, bad_request},
-    middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(search_books))
-        .layer(middleware::from_fn(auth_middleware))
+    OpenApiRouter::new().routes(routes!(search_books))
 }
 
 #[derive(Deserialize, IntoParams)]

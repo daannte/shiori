@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::http::header;
+use axum::{http::header, middleware};
 use shiori_core::App;
 use utoipa::{
     Modify, OpenApi,
@@ -11,7 +11,11 @@ use utoipa::{
 };
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::routes::{api, koreader};
+use crate::{
+    config::state::AppState,
+    middleware::auth::{auth_middleware, url_auth_middleware},
+    routes::{api, koreader},
+};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -38,11 +42,23 @@ impl BaseOpenApi {
         OpenApiRouter::with_openapi(Self::openapi())
     }
 
-    pub fn build() -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
-        Self::router()
-            .merge(api::mount())
+    pub fn build(state: AppState) -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
+        let public = Self::router().merge(api::mount_public());
+
+        let private =
+            OpenApiRouter::new()
+                .merge(api::mount())
+                .layer(middleware::from_fn_with_state(
+                    state.clone(),
+                    auth_middleware,
+                ));
+
+        // TODO: Add OPDS here
+        let special = OpenApiRouter::new()
             .merge(koreader::mount())
-            .split_for_parts()
+            .layer(middleware::from_fn_with_state(state, url_auth_middleware));
+
+        public.merge(private).merge(special).split_for_parts()
     }
 }
 

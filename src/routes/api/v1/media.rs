@@ -3,7 +3,6 @@ use std::{ffi::OsStr, path};
 use axum::{
     Json,
     extract::{Path, State},
-    middleware,
 };
 use chrono::NaiveDate;
 use diesel_async::{AsyncConnection, scoped_futures::ScopedFutureExt};
@@ -19,7 +18,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, not_found},
-    middleware::auth::{AuthUser, auth_middleware},
+    middleware::auth::AuthUser,
     routes::openapi::tags,
 };
 
@@ -27,7 +26,6 @@ pub fn mount() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_media_cover))
         .routes(routes!(get_media, patch_media, delete_media))
-        .layer(middleware::from_fn(auth_middleware))
 }
 
 /// Fetch media cover.

@@ -17,6 +17,11 @@ pub fn mount() -> OpenApiRouter<AppState> {
         .merge(library::mount())
         .merge(media::mount())
         .merge(metadata::mount())
-        .merge(system::mount())
         .merge(tokens::mount())
+}
+
+pub fn mount_public() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .merge(auth::mount_public())
+        .merge(system::mount())
 }

@@ -1,6 +1,6 @@
 use std::path;
 
-use axum::{Json, extract::State, http::StatusCode, middleware};
+use axum::{Json, extract::State, http::StatusCode};
 use serde::Deserialize;
 use shiori_api_types::EncodableDirectories;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -8,14 +8,11 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     config::state::AppState,
     errors::{AppResult, bad_request, custom},
-    middleware::auth::auth_middleware,
     routes::openapi::tags,
 };
 
 pub fn mount() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(list_directories))
-        .layer(middleware::from_fn(auth_middleware))
+    OpenApiRouter::new().routes(routes!(list_directories))
 }
 
 /// List filesystem directories.

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{FromRequestParts, Path, Request},
+    extract::{FromRequestParts, Path, Request, State},
     http::header,
     middleware::Next,
     response::Response,
@@ -16,62 +16,7 @@ use crate::{
     errors::{AppResult, BoxedAppError, unauthorized},
 };
 
-pub async fn auth_middleware(mut req: Request, next: Next) -> AppResult<Response> {
-    let jar = CookieJar::from_headers(req.headers());
-    let authorization = req.headers().get(header::AUTHORIZATION);
-
-    if let Some(auth_header) = authorization {
-        let auth_header = auth_header.to_str().map_err(|_| {
-            unauthorized("Invalid `Authorization` header: Found non-ASCII characters")
-        })?;
-
-        let (scheme, token) = auth_header.split_once(' ').unwrap_or(("", auth_header));
-
-        if !scheme.eq_ignore_ascii_case("bearer") {
-            return Err(unauthorized(format!(
-                "Invalid `Authorization` header: Found unexpected authentication scheme: `{scheme}`"
-            )));
-        }
-
-        let token = HashedToken::parse(token).map_err(|_| unauthorized("Invalid API token"))?;
-
-        req.extensions_mut().insert(AuthContext::Token(token.hash));
-        return Ok(next.run(req).await);
-    }
-
-    if let Some(cookie) = jar.get("access_token") {
-        let user_id_str = AccessToken::decode(cookie.value())
-            .map_err(|_| unauthorized("Invalid access token"))?;
-
-        let user_id = user_id_str
-            .parse::<i32>()
-            .map_err(|_| unauthorized("Invalid access token"))?;
-
-        req.extensions_mut().insert(AuthContext::Cookie(user_id));
-        return Ok(next.run(req).await);
-    }
-
-    Err(unauthorized("Unauthorized"))
-}
-
-pub async fn url_auth_middleware(
-    Path(api_token): Path<String>,
-    mut req: Request,
-    next: Next,
-) -> AppResult<Response> {
-    let token = HashedToken::parse(&api_token).map_err(|_| unauthorized("Invalid API token"))?;
-
-    req.extensions_mut().insert(AuthContext::Token(token.hash));
-
-    Ok(next.run(req).await)
-}
-
 #[derive(Clone)]
-pub enum AuthContext {
-    Cookie(i32),
-    Token(Vec<u8>),
-}
-
 pub enum Auth {
     Cookie(User),
     Token(User),
@@ -89,6 +34,96 @@ impl Auth {
     }
 }
 
+pub async fn auth_middleware(
+    State(app): State<AppState>,
+    mut req: Request,
+    next: Next,
+) -> AppResult<Response> {
+    let source = extract_auth_source(&req).ok_or_else(|| unauthorized("Unauthorized"))?;
+    let auth = resolve_auth(&app, source).await?;
+
+    req.extensions_mut().insert(auth);
+
+    Ok(next.run(req).await)
+}
+
+pub async fn url_auth_middleware(
+    State(app): State<AppState>,
+    Path(api_token): Path<String>,
+    mut req: Request,
+    next: Next,
+) -> AppResult<Response> {
+    let source = AuthSource::Url(api_token);
+    let auth = resolve_auth(&app, source).await?;
+
+    req.extensions_mut().insert(auth);
+
+    Ok(next.run(req).await)
+}
+
+enum AuthSource {
+    Header(String),
+    Cookie(String),
+    Url(String),
+}
+
+fn extract_auth_source(req: &Request) -> Option<AuthSource> {
+    if let Some(auth_header) = req.headers().get(header::AUTHORIZATION)
+        && let Ok(value) = auth_header.to_str()
+    {
+        return Some(AuthSource::Header(value.to_string()));
+    }
+
+    let jar = CookieJar::from_headers(req.headers());
+    if let Some(cookie) = jar.get("access_token") {
+        return Some(AuthSource::Cookie(cookie.value().to_string()));
+    }
+
+    None
+}
+
+async fn resolve_auth(app: &AppState, source: AuthSource) -> AppResult<Auth> {
+    match source {
+        AuthSource::Header(value) => {
+            let (scheme, token) = value.split_once(' ').unwrap_or(("", value.as_str()));
+
+            if !scheme.eq_ignore_ascii_case("bearer") {
+                return Err(unauthorized("Invalid auth scheme"));
+            }
+
+            let token = HashedToken::parse(token).map_err(|_| unauthorized("Invalid API token"))?;
+
+            let user_id = update_last_used_at(app, &token.hash).await?;
+            let user = fetch_user(app, user_id).await?;
+
+            Ok(Auth::Token(user))
+        }
+
+        AuthSource::Cookie(value) => {
+            let user_id_str =
+                AccessToken::decode(&value).map_err(|_| unauthorized("Invalid access token"))?;
+
+            let user_id = user_id_str
+                .parse::<i32>()
+                .map_err(|_| unauthorized("Invalid access token"))?;
+
+            let user = fetch_user(app, user_id).await?;
+
+            Ok(Auth::Cookie(user))
+        }
+
+        AuthSource::Url(token_str) => {
+            let token =
+                HashedToken::parse(&token_str).map_err(|_| unauthorized("Invalid API token"))?;
+
+            let user_id = update_last_used_at(app, &token.hash).await?;
+            let user = fetch_user(app, user_id).await?;
+
+            Ok(Auth::Token(user))
+        }
+    }
+}
+
 pub struct AuthUser(pub Auth);
 
 impl FromRequestParts<AppState> for AuthUser {
@@ -96,41 +131,36 @@ impl FromRequestParts<AppState> for AuthUser {
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
-        state: &AppState,
+        _state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         let auth = parts
             .extensions
-            .get::<AuthContext>()
+            .get::<Auth>()
+            .cloned()
             .ok_or_else(|| unauthorized("Unauthorized"))?;
-
-        let mut conn = state.db().await?;
-
-        let user_id = match auth {
-            AuthContext::Cookie(id) => *id,
-            AuthContext::Token(token) => {
-                let api_token = ApiToken::find_by_hash(&mut conn, token)
-                    .await
-                    .map_err(|_| unauthorized("Invalid API token"))?;
-
-                if let Err(e) = api_token.update_last_used(&mut conn).await {
-                    tracing::error!(
-                        api_token = api_token.key_id,
-                        error = %e,
-                        "Failed to update last used time"
-                    );
-                }
-
-                api_token.user_id
-            }
-        };
-
-        let user = User::find(&mut conn, user_id).await?;
-
-        let auth = match auth {
-            AuthContext::Cookie(_) => Auth::Cookie(user),
-            AuthContext::Token(_) => Auth::Token(user),
-        };
 
         Ok(AuthUser(auth))
     }
+}
+
+async fn fetch_user(app: &AppState, user_id: i32) -> AppResult<User> {
+    let mut conn = app.db().await?;
+    Ok(User::find(&mut conn, user_id).await?)
+}
+
+async fn update_last_used_at(app: &AppState, token: &[u8]) -> AppResult<i32> {
+    let mut conn = app.db().await?;
+    let api_token = ApiToken::find_by_hash(&mut conn, token)
+        .await
+        .map_err(|_| unauthorized("Invalid API token"))?;
+
+    if let Err(e) = api_token.update_last_used(&mut conn).await {
+        tracing::error!(
+            api_token = api_token.key_id,
+            error = %e,
+            "Failed to update last used time"
+        );
+    };
+
+    Ok(api_token.user_id)
 }

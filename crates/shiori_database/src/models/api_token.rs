@@ -30,10 +30,7 @@ pub struct ApiToken {
 }
 
 impl ApiToken {
-    pub async fn find_by_hash(
-        conn: &mut AsyncPgConnection,
-        hash: &Vec<u8>,
-    ) -> QueryResult<ApiToken> {
+    pub async fn find_by_hash(conn: &mut AsyncPgConnection, hash: &[u8]) -> QueryResult<ApiToken> {
         ApiToken::query()
             .filter(api_tokens::token_hash.eq(hash))
             .filter(
