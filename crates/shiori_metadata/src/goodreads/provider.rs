@@ -2,7 +2,7 @@ use crate::{
     MetadataError,
     client::HTTP_CLIENT,
     goodreads::{book, search},
-    is_isbn, is_url_encoded,
+    is_isbn,
     provider::{MetadataProvider, MetadataResult},
 };
 use futures::{StreamExt, stream};
@@ -16,25 +16,14 @@ impl MetadataProvider for GoodreadsProvider {
     const SEARCH_URL: &str = "https://www.goodreads.com/search?search_type=books&q=";
 
     async fn search_books(q: String) -> MetadataResult<Vec<EncodableMetadataSearch>> {
-        let q = q.trim().to_string();
-
-        if q.is_empty() {
-            return Ok(vec![]);
-        }
-
         if is_isbn(&q) {
             let id = Self::isbn_to_id(&q).await?;
             let book = Self::fetch_book(id).await?;
             return Ok(vec![book]);
         }
 
-        let q = if is_url_encoded(&q) {
-            q
-        } else {
-            form_urlencoded::byte_serialize(q.as_bytes()).collect()
-        };
-
-        let ids = search::books(q).await?;
+        let query = form_urlencoded::byte_serialize(q.as_bytes()).collect();
+        let ids = search::books(query).await?;
 
         let results = stream::iter(ids)
             .map(|id| async move { Self::fetch_book(id).await })
