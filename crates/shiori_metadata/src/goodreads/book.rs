@@ -5,7 +5,7 @@ use shiori_api_types::EncodableMetadataSearch;
 use crate::provider::{MetadataProvider, MetadataResult};
 use crate::{MetadataError, goodreads::parsing::fetch_doc};
 
-pub async fn search_id(book: &str) -> MetadataResult<EncodableMetadataSearch> {
+pub async fn fetch(book: String) -> MetadataResult<EncodableMetadataSearch> {
     let url = format!("{}{}", super::GoodreadsProvider::BOOK_URL, book);
 
     let document = match fetch_doc(&url).await {

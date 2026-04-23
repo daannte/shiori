@@ -1,15 +1,11 @@
 use scraper::{ElementRef, Selector};
 
 use crate::MetadataError;
+use crate::goodreads::parsing::fetch_doc;
 use crate::provider::{MetadataProvider, MetadataResult};
-use crate::{goodreads::parsing::fetch_doc, provider::BooksParams};
 
-pub async fn search_books(params: BooksParams) -> MetadataResult<Vec<String>> {
-    let url = format!(
-        "{}{}",
-        super::GoodreadsProvider::SEARCH_URL,
-        params.as_query_string()
-    );
+pub async fn books(q: String) -> MetadataResult<Vec<String>> {
+    let url = format!("{}{}", super::GoodreadsProvider::SEARCH_URL, q);
 
     tracing::debug!("Fetching book data from URL: {}", url);
 
