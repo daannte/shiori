@@ -22,3 +22,10 @@ pub fn is_isbn(input: &str) -> bool {
     let digits = input.chars().filter(|c| c.is_ascii_digit()).count();
     digits == 10 || digits == 13
 }
+
+fn is_url_encoded(s: &str) -> bool {
+    match urlencoding::decode(s) {
+        Ok(decoded) => decoded != s,
+        Err(_) => false,
+    }
+}
