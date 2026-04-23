@@ -105,12 +105,12 @@ pub async fn fetch(book: String) -> MetadataResult<EncodableMetadataSearch> {
     Ok(metadata)
 }
 
-/// Extract the first key starting with "book:" and return its value
+/// Extract the first key starting with "book:" that has a title.
 fn book_info(apollo_state: &Value) -> Option<&Value> {
     apollo_state
         .as_object()?
         .iter()
-        .find(|(k, _)| k.to_lowercase().starts_with("book:"))
+        .find(|(k, v)| k.to_lowercase().starts_with("book:") && v.get("title").is_some())
         .map(|(_, v)| v)
 }
 

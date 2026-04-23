@@ -15,8 +15,8 @@
 	import ReadMore from '$lib/components/read-more.svelte';
 
 	type PatchMetadata = components['schemas']['PatchMetadata'];
-	type MetadataSearch =
-		operations['get_book_metadata']['responses']['200']['content']['application/json'];
+	type Metadata =
+		operations['search_books']['responses']['200']['content']['application/json'][number];
 
 	let { data } = $props();
 
@@ -24,7 +24,7 @@
 	let isMetadataOpen = $state(false);
 	let isDeleteOpen = $state(false);
 
-	let metadataSearch = $state.raw<MetadataSearch | undefined>();
+	let metadataSearch = $state.raw<Metadata | undefined>();
 
 	let metadataArr = $derived.by(() =>
 		data.metadata
@@ -140,7 +140,12 @@
 			{/if}
 
 			<div class="mb-4 flex flex-wrap items-center gap-2 border-b-2 border-border pb-4">
-				<MetadataDialog bind:metadataSearch bind:isOpen={isMetadataOpen} name={data.name} />
+				<MetadataDialog
+					bind:metadataSearch
+					bind:isOpen={isMetadataOpen}
+					name={data.name}
+					isbn={data.metadata?.isbn}
+				/>
 
 				<Button size="icon" variant="ghost">
 					<Download size={18} />

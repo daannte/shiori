@@ -1,19 +1,19 @@
 <script lang="ts">
 	import type { operations } from '@shiori/api-client';
 
-	type MetadataSearch =
-		operations['get_book_metadata']['responses']['200']['content']['application/json'];
+	type Metadata =
+		operations['search_books']['responses']['200']['content']['application/json'][number];
 
 	interface Props {
-		book: MetadataSearch;
-		onclick: (id: number) => void;
+		book: Metadata;
+		onclick: () => void;
 	}
 
 	let { book, onclick }: Props = $props();
 </script>
 
 <button
-	onclick={() => onclick(book.provider_id)}
+	{onclick}
 	class="flex flex-row gap-2 rounded-lg text-left transition-colors duration-200 hover:bg-muted md:max-h-48"
 >
 	<img
