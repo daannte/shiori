@@ -73,27 +73,36 @@
 	{/snippet}
 
 	{#snippet children()}
-		<div class="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
-			<div>
-				<Label for="author" class="sr-only">Author</Label>
-				<Input class="text-sm md:text-base" id="author" bind:value={author} placeholder="Author" />
+		<div class="grid gap-3 sm:grid-cols-3 sm:items-end">
+			<div class="space-y-1">
+				<Label for="author" class="text-xs text-muted-foreground">Author</Label>
+				<Input
+					class="text-sm md:text-base"
+					id="author"
+					bind:value={author}
+					placeholder="Asato Asato"
+				/>
 			</div>
 
 			<div>
-				<Label for="title" class="sr-only">Title</Label>
-				<Input class="text-sm md:text-base" id="title" bind:value={title} placeholder="Title" />
+				<Label for="title" class="text-xs text-muted-foreground">Title</Label>
+				<Input id="title" bind:value={title} placeholder="Eighty Six" />
 			</div>
 			<div>
-				<Label for="isbn" class="sr-only">ISBN</Label>
-				<Input class="text-sm md:text-base" id="isbn" bind:value={isbn} placeholder="ISBN" />
+				<Label for="isbn" class="text-xs text-muted-foreground">ISBN</Label>
+				<Input id="isbn" bind:value={isbn} placeholder="9781975303129" />
 			</div>
-			<Button size="icon" class="w-full sm:w-8" onclick={search} disabled={loading}>
-				{#if loading}
-					<LoaderCircle class="animate-spin" />
-				{:else}
-					<Search />
-				{/if}
-			</Button>
+			<div class="flex justify-end sm:col-span-3">
+				<Button class="w-full gap-2 sm:w-auto" onclick={search} disabled={loading}>
+					{#if loading}
+						<LoaderCircle class="animate-spin" />
+						Searching...
+					{:else}
+						<Search />
+						Search
+					{/if}
+				</Button>
+			</div>
 		</div>
 		{#if books.length}
 			<div class="mt-6 grid gap-4 overflow-y-auto sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
