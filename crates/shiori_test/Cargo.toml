@@ -3,9 +3,25 @@ name = "shiori_test"
 edition = "2024"
 
 [dependencies]
+axum = { version = "0.8.8", features = ["multipart", "macros"] }
+derive_more = { version = "2.1.1", features = ["deref", "deref_mut", "display"] }
+bytes = "1.11.1"
+claims = "0.8.0"
 diesel = { version = "2.3.7", features = ["chrono", "postgres"] }
 diesel-async = { version = "0.7.4", features = ["postgres", "r2d2"] }
 diesel_migrations = { version = "2.3.1", features = ["postgres"] }
+futures-util = "0.3.32"
+googletest = "0.14.2"
+hyper = { version = "1.9.0", features = ["client", "http1"] }
+http = "1.4.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tower = "0.5.3"
 rand = "0.10.0"
 tracing = "0.1"
 url = "2.5.8"
+
+shiori_core = { path = "../shiori_core/" }
+shiori_database = { path = "../shiori_database" }
+shiori_jwt = { path = "../shiori_jwt" }
+shiori = { path = "../.." }

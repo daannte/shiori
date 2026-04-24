@@ -37,7 +37,7 @@ shiori_database = { path = "crates/shiori_database" }
 shiori_filesystem = { path = "crates/shiori_filesystem" }
 shiori_jwt = { path = "crates/shiori_jwt" }
 shiori_metadata = { path = "crates/shiori_metadata" }
-shiori_test = { path = "crates/shiori_test" }
 
 [dev-dependencies]
 insta = { version = "1.47.2", features = ["json"] }
+shiori_test = { path = "crates/shiori_test" }

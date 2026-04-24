@@ -1,0 +1,80 @@
+use crate::matchers::is_success;
+use bytes::Bytes;
+use claims::{assert_ok, assert_some, assert_some_eq};
+use googletest::prelude::*;
+use serde_json::Value;
+use std::{marker::PhantomData, str::from_utf8};
+
+use derive_more::Deref;
+use http::header;
+
+/// A type providing helper methods for working with responses
+#[derive(Deref)]
+#[must_use]
+pub struct Response<T> {
+    #[deref]
+    response: hyper::Response<Bytes>,
+    return_type: PhantomData<T>,
+}
+
+impl<T> Response<T>
+where
+    for<'de> T: serde::Deserialize<'de>,
+{
+    /// Assert that the response is good and deserialize the message
+    #[track_caller]
+    pub fn good(self) -> T {
+        assert_that!(self.status(), is_success());
+        json(&self.response)
+    }
+}
+
+impl<T> Response<T> {
+    #[track_caller]
+    pub(super) fn new(response: hyper::Response<Bytes>) -> Self {
+        Self {
+            response,
+            return_type: PhantomData,
+        }
+    }
+
+    /// Consume the response body and convert it to a JSON value
+    #[track_caller]
+    pub fn json(&self) -> Value {
+        json(&self.response)
+    }
+
+    #[track_caller]
+    pub fn text(&self) -> String {
+        let bytes = self.response.body();
+        assert_ok!(from_utf8(bytes)).to_string()
+    }
+}
+
+fn json<T>(r: &hyper::Response<Bytes>) -> T
+where
+    for<'de> T: serde::Deserialize<'de>,
+{
+    fn inner(r: &hyper::Response<Bytes>) -> &Bytes {
+        let headers = r.headers();
+
+        assert_some_eq!(headers.get(header::CONTENT_TYPE), "application/json");
+
+        let content_length = assert_some!(
+            r.headers().get(header::CONTENT_LENGTH),
+            "Missing content-length header"
+        );
+        let content_length = assert_ok!(content_length.to_str());
+        let content_length: usize = assert_ok!(content_length.parse());
+
+        let bytes = r.body();
+        assert_that!(*bytes, len(eq(content_length)));
+
+        bytes
+    }
+
+    match serde_json::from_slice(inner(r)) {
+        Ok(t) => t,
+        Err(e) => panic!("failed to decode: {e:?}"),
+    }
+}

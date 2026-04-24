@@ -42,21 +42,17 @@ impl BaseOpenApi {
         OpenApiRouter::with_openapi(Self::openapi())
     }
 
-    pub fn build(state: AppState) -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
+    pub fn build(app: AppState) -> (axum::Router<Arc<App>>, utoipa::openapi::OpenApi) {
         let public = Self::router().merge(api::mount_public());
 
-        let private =
-            OpenApiRouter::new()
-                .merge(api::mount())
-                .layer(middleware::from_fn_with_state(
-                    state.clone(),
-                    auth_middleware,
-                ));
+        let private = OpenApiRouter::new()
+            .merge(api::mount())
+            .layer(middleware::from_fn_with_state(app.clone(), auth_middleware));
 
         // TODO: Add OPDS here
         let special = OpenApiRouter::new()
             .merge(koreader::mount())
-            .layer(middleware::from_fn_with_state(state, url_auth_middleware));
+            .layer(middleware::from_fn_with_state(app, url_auth_middleware));
 
         public.merge(private).merge(special).split_for_parts()
     }
