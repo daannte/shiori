@@ -15,7 +15,7 @@ pub struct MockAnonymousUser {
 
 impl MockAnonymousUser {
     pub fn new(app: TestApp) -> Self {
-        return Self { app };
+        Self { app }
     }
 }
 
@@ -41,7 +41,7 @@ pub struct MockJwtUser {
 
 impl MockJwtUser {
     pub fn new(app: TestApp, user: User) -> Self {
-        return Self { app, user };
+        Self { app, user }
     }
 
     /// Returns a reference to the database `User` model

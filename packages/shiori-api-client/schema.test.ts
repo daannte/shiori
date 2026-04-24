@@ -1,7 +1,7 @@
 import openapiTS, { astToString } from 'openapi-typescript'
 import { expect, test } from "vitest"
 
-const SNAPSHOT_PATH = "../../tests/snapshots/openapi__open_api_snapshot.snap"
+const SNAPSHOT_PATH = "../../tests/snapshots/integration__openapi__open_api_snapshot.snap"
 
 const HEADER = `/**
  * This file is auto-generated. Do not edit manually.

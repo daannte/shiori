@@ -1,0 +1,2105 @@
+---
+source: tests/openapi.rs
+expression: newest.to_pretty_json().unwrap()
+---
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Shiori",
+    "description": "TODO",
+    "license": {
+      "name": ""
+    },
+    "version": "0.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Password associated with the account.",
+                    "examples": [
+                      "supercoolpass"
+                    ]
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username of the account.",
+                    "examples": [
+                      "Reaper"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully logged in",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Sets access_token and refresh_token cookies"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Successfully logged out",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Removes access_token and refresh_token cookies"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Currently authenticated user",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Refresh JWT token",
+        "operationId": "refresh_token",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "cookie",
+            "description": "Refresh token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully refreshed JWT token",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Sets access_token and refresh_token HttpOnly cookies"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Register",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Password associated with the account.",
+                    "examples": [
+                      "supercoolpass"
+                    ]
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username of the account.",
+                    "examples": [
+                      "Reaper"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "is_server_owner",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the user was created.",
+                      "examples": [
+                        "2025-07-25T12:45:19Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the user.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "is_server_owner": {
+                      "type": "boolean",
+                      "description": "Indicates whether the user is the owner of the server.",
+                      "examples": [
+                        false
+                      ]
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user.",
+                      "examples": [
+                        "Reaper"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request payload"
+          },
+          "409": {
+            "description": "Username already taken"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/filesystem/directories/list": {
+      "post": {
+        "tags": [
+          "filesystem"
+        ],
+        "summary": "List filesystem directories.",
+        "description": "The provided path must be **relative** to application's base directory.",
+        "operationId": "list_directories",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "path"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Path of the directory to list its subdirectories.",
+                    "examples": [
+                      ""
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully listed directories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "parent",
+                    "directories"
+                  ],
+                  "properties": {
+                    "directories": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "examples": [
+                          "light_novels"
+                        ]
+                      },
+                      "description": "Immediate subdirectories of the given path."
+                    },
+                    "parent": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Parent directory of the given path.",
+                      "examples": [
+                        null
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path"
+          },
+          "403": {
+            "description": "Access to the request path is not allowed"
+          },
+          "404": {
+            "description": "Directory does not exist"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/libraries": {
+      "get": {
+        "tags": [
+          "library"
+        ],
+        "summary": "List all libraries.",
+        "operationId": "list_libraries",
+        "responses": {
+          "200": {
+            "description": "Successfully fetched libraries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "name",
+                      "path",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp of when the media was created.",
+                        "examples": [
+                          "2024-11-08T17:23:41Z"
+                        ]
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier for the library.",
+                        "examples": [
+                          86
+                        ]
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the library.",
+                        "examples": [
+                          "Light Novels"
+                        ]
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "File system path to the library's directory.",
+                        "examples": [
+                          "/data/books/light_novels"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "library"
+        ],
+        "summary": "Create a new library.",
+        "description": "The directory must already exist on the system.",
+        "operationId": "create_library",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "path"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the library.",
+                    "examples": [
+                      "Light Novels"
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "File system path to the library's directory, relative to the application's base directory.",
+                    "examples": [
+                      "light_novels"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created library",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "path",
+                    "created_at"
+                  ],
+                  "properties": {
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of when the media was created.",
+                      "examples": [
+                        "2024-11-08T17:23:41Z"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Unique identifier for the library.",
+                      "examples": [
+                        86
+                      ]
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the library.",
+                      "examples": [
+                        "Light Novels"
+                      ]
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "File system path to the library's directory.",
+                      "examples": [
+                        "/data/books/light_novels"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/libraries/{id}/media": {
+      "get": {
+        "tags": [
+          "library"
+        ],
+        "summary": "List library media.",
+        "operationId": "list_library_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the library",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched library media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Media"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "metadata": {
+                            "oneOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "$ref": "#/components/schemas/MediaMetadata"
+                              }
+                            ]
+                          },
+                          "progress": {
+                            "oneOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "$ref": "#/components/schemas/ReadingProgress"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "library"
+        ],
+        "summary": "Upload a new media item to the specified library.",
+        "operationId": "create_library_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the library",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "binary",
+                      "minimum": 0
+                    },
+                    "description": "An array of files to upload."
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully added media to the library",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "name",
+                      "size",
+                      "path",
+                      "extension",
+                      "created_at",
+                      "library_id"
+                    ],
+                    "properties": {
+                      "cover_path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Endpoint where the cover is stored.",
+                        "examples": [
+                          "/api/v1/media/4/cover"
+                        ]
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp of when the media was created.",
+                        "examples": [
+                          "2026-03-23T12:00:00Z"
+                        ]
+                      },
+                      "extension": {
+                        "type": "string",
+                        "description": "File extension of the media.",
+                        "examples": [
+                          "epub"
+                        ]
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier for the media item.",
+                        "examples": [
+                          86
+                        ]
+                      },
+                      "library_id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Library this media belongs to.",
+                        "examples": [
+                          2
+                        ]
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the media file, excluding extension.",
+                        "examples": [
+                          "86_Volume_1"
+                        ]
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "File system path where the media is stored.",
+                        "examples": [
+                          "/data/books/light_novels/86_Volume_1.epub"
+                        ]
+                      },
+                      "size": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Size of the media file in bytes.",
+                        "examples": [
+                          "102400"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid uploaded media"
+          },
+          "404": {
+            "description": "Library not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media/{id}": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Fetch media item.",
+        "operationId": "get_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Media"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "metadata": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        },
+                        "progress": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ReadingProgress"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Delete a media item.",
+        "operationId": "delete_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully delete media"
+          },
+          "404": {
+            "description": "Media not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Update media information.",
+        "operationId": "patch_media",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cover_url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "URL of the cover image associated with the media.",
+                    "examples": [
+                      "https://example.com/cover.jpg"
+                    ]
+                  },
+                  "metadata": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PatchMetadata",
+                        "description": "Optional metadata to update for the media item."
+                      }
+                    ]
+                  },
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Name of the media item.",
+                    "examples": [
+                      "86—EIGHTY-SIX, Vol. 1"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated media information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Media"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "metadata": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/MediaMetadata"
+                            }
+                          ]
+                        },
+                        "progress": {
+                          "oneOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ReadingProgress"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/media/{id}/cover": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Fetch media cover.",
+        "operationId": "get_media_cover",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the media item",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched media cover"
+          },
+          "404": {
+            "description": "Media or cover not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Info about the server.",
+        "operationId": "meta",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved server metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "initialized"
+                  ],
+                  "properties": {
+                    "initialized": {
+                      "type": "boolean",
+                      "description": "Whether the server has been initialized and an owner account exists.",
+                      "examples": [
+                        true
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/metadata/search": {
+      "get": {
+        "tags": [
+          "metadata"
+        ],
+        "summary": "Search for books.",
+        "operationId": "search_books",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "A search query string.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "The provider to use for the search.\nDefaults to \"goodreads\" if not provided in the query.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully found books",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "title",
+                      "authors",
+                      "genres",
+                      "provider_id"
+                    ],
+                    "properties": {
+                      "authors": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "examples": [
+                            "Asato Asato"
+                          ]
+                        },
+                        "description": "List of authors associated with the media item."
+                      },
+                      "cover_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "URL of the cover image associated with the media.",
+                        "examples": [
+                          "https://example.com/cover.jpg"
+                        ]
+                      },
+                      "description": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Description of the media item.",
+                        "examples": [
+                          "The San Magnolia Republic..."
+                        ]
+                      },
+                      "genres": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "examples": [
+                            "War"
+                          ]
+                        },
+                        "description": "List of genres associated with the media item."
+                      },
+                      "isbn": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+                        "examples": [
+                          "1975303121"
+                        ]
+                      },
+                      "language": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Language of the media content.",
+                        "examples": [
+                          "English"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Provider id of the media item.",
+                        "examples": [
+                          41825371
+                        ],
+                        "minimum": 0
+                      },
+                      "published": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date",
+                        "description": "Date the media was published.",
+                        "examples": [
+                          "2019-03-26"
+                        ]
+                      },
+                      "publisher": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Name of the publisher or publishing organization.",
+                        "examples": [
+                          "Yen On"
+                        ]
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the media item.",
+                        "examples": [
+                          "86—EIGHTY-SIX, Vol. 1"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tokens": {
+      "get": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "List all api tokens of authenticated user.",
+        "operationId": "list_tokens",
+        "responses": {
+          "200": {
+            "description": "Successfully fetched api tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "name",
+                      "key_id",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp of when the token was created.",
+                        "examples": [
+                          "2025-07-25T12:45:19Z"
+                        ]
+                      },
+                      "expires_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "Timestamp of when the token expires.",
+                        "examples": [
+                          "2026-12-31T00:00:00Z"
+                        ]
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Unique identifier for the token.",
+                        "examples": [
+                          86
+                        ]
+                      },
+                      "key_id": {
+                        "type": "string",
+                        "description": "Short key id for the token.",
+                        "examples": [
+                          "1a2b3c4d"
+                        ]
+                      },
+                      "last_used_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "Timestamp of when the token was last used.",
+                        "examples": [
+                          "2026-03-24T16:33:19Z"
+                        ]
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name for the token.",
+                        "examples": [
+                          "Koreader Sync"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Create new api token.",
+        "operationId": "create_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Timestamp of when the token expires.",
+                    "examples": [
+                      "2026-12-31T00:00:00Z"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the token",
+                    "examples": [
+                      "Koreader Sync"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created api token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiToken",
+                      "description": "The token information."
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "plaintoken"
+                      ],
+                      "properties": {
+                        "plaintoken": {
+                          "type": "string",
+                          "description": "The plaintext representation of the API token.",
+                          "examples": [
+                            "shiori_1a2b3c4d_1a2b3c4d5e6f7g8h9i0j1234567890ab"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tokens/{key_id}": {
+      "delete": {
+        "tags": [
+          "tokens"
+        ],
+        "summary": "Delete api token with key id.",
+        "operationId": "delete_token",
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "description": "Key id of the api token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted api token"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "api_token": []
+          }
+        ]
+      }
+    },
+    "/koreader/{token}/syncs/progress": {
+      "put": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Save koreader progress.",
+        "operationId": "update_progress",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document",
+                  "progress",
+                  "percentage",
+                  "device",
+                  "device_id"
+                ],
+                "properties": {
+                  "device": {
+                    "type": "string",
+                    "description": "Name of the Koreader device that the progress is being tracked on."
+                  },
+                  "device_id": {
+                    "type": "string",
+                    "description": "Unique device identifier (UUID) assigned by Koreader to the specific device."
+                  },
+                  "document": {
+                    "type": "string",
+                    "description": "Hash of the book in the Koreader system."
+                  },
+                  "percentage": {
+                    "type": "number",
+                    "format": "double",
+                    "description": "Reading progress as a percentage of completion."
+                  },
+                  "progress": {
+                    "type": "string",
+                    "description": "Current position in the book. There are two types of progress measurement:\n    - A page number (for paginated books).\n    - An x-pointer (for DOM-based books, using their scrolling reader)."
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successfully saved progress"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Media not found"
+          }
+        }
+      }
+    },
+    "/koreader/{token}/syncs/progress/{document}": {
+      "get": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Retrieve koreader progress.",
+        "operationId": "get_progress",
+        "parameters": [
+          {
+            "name": "document",
+            "in": "path",
+            "description": "Hash of the book in the Koreader system",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "device",
+                    "device_id",
+                    "percentage",
+                    "progress",
+                    "timestamp"
+                  ],
+                  "properties": {
+                    "device": {
+                      "type": "string"
+                    },
+                    "device_id": {
+                      "type": "string"
+                    },
+                    "percentage": {
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "int64",
+                      "description": "Timestamp of the progress update, in Unix epoch time.",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/koreader/{token}/users/auth": {
+      "get": {
+        "tags": [
+          "koreader"
+        ],
+        "summary": "Authorize koreader sync user.",
+        "operationId": "authorize",
+        "responses": {
+          "200": {
+            "description": "Successfully authorized user"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiToken": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "key_id",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when the token was created.",
+            "examples": [
+              "2025-07-25T12:45:19Z"
+            ]
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the token expires.",
+            "examples": [
+              "2026-12-31T00:00:00Z"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier for the token.",
+            "examples": [
+              86
+            ]
+          },
+          "key_id": {
+            "type": "string",
+            "description": "Short key id for the token.",
+            "examples": [
+              "1a2b3c4d"
+            ]
+          },
+          "last_used_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the token was last used.",
+            "examples": [
+              "2026-03-24T16:33:19Z"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for the token.",
+            "examples": [
+              "Koreader Sync"
+            ]
+          }
+        }
+      },
+      "Media": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "size",
+          "path",
+          "extension",
+          "created_at",
+          "library_id"
+        ],
+        "properties": {
+          "cover_path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Endpoint where the cover is stored.",
+            "examples": [
+              "/api/v1/media/4/cover"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when the media was created.",
+            "examples": [
+              "2026-03-23T12:00:00Z"
+            ]
+          },
+          "extension": {
+            "type": "string",
+            "description": "File extension of the media.",
+            "examples": [
+              "epub"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier for the media item.",
+            "examples": [
+              86
+            ]
+          },
+          "library_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Library this media belongs to.",
+            "examples": [
+              2
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the media file, excluding extension.",
+            "examples": [
+              "86_Volume_1"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "description": "File system path where the media is stored.",
+            "examples": [
+              "/data/books/light_novels/86_Volume_1.epub"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Size of the media file in bytes.",
+            "examples": [
+              "102400"
+            ]
+          }
+        }
+      },
+      "MediaMetadata": {
+        "type": "object",
+        "required": [
+          "authors",
+          "genres"
+        ],
+        "properties": {
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "examples": [
+                [
+                  "Asato Asato"
+                ]
+              ]
+            },
+            "description": "List of authors associated with the media item."
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Description of the media item.",
+            "examples": [
+              "The San Magnolia Republic..."
+            ]
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "examples": [
+                [
+                  "Light Novel",
+                  "War"
+                ]
+              ]
+            },
+            "description": "List of genres associated with the media item."
+          },
+          "isbn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+            "examples": [
+              "1975303121"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of the media content.",
+            "examples": [
+              "English"
+            ]
+          },
+          "published": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Date the media was published.",
+            "examples": [
+              "2019-03-26"
+            ]
+          },
+          "publisher": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name of the publisher or publishing organization.",
+            "examples": [
+              "Yen On"
+            ]
+          }
+        }
+      },
+      "PatchMetadata": {
+        "type": "object",
+        "properties": {
+          "authors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "examples": [
+                [
+                  "Asato Asato"
+                ]
+              ]
+            },
+            "description": "List of authors associated with the media item."
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Description of the media item.",
+            "examples": [
+              "The San Magnolia Republic..."
+            ]
+          },
+          "genres": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "examples": [
+                [
+                  "Light Novel",
+                  "War"
+                ]
+              ]
+            },
+            "description": "List of genres associated with the media item."
+          },
+          "isbn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "International Standard Book Number (ISBN).\nTypically used for books.",
+            "examples": [
+              "1975303121"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Language of the media content.",
+            "examples": [
+              "English"
+            ]
+          },
+          "published": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "Date the media was published.",
+            "examples": [
+              "2019-03-26"
+            ]
+          },
+          "publisher": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name of the publisher or publishing organization.",
+            "examples": [
+              "Yen On"
+            ]
+          }
+        }
+      },
+      "ReadingProgress": {
+        "type": "object",
+        "required": [
+          "percentage_completed",
+          "started_at",
+          "updated_at",
+          "completed"
+        ],
+        "properties": {
+          "completed": {
+            "type": "boolean",
+            "description": "Indicates whether this media has been fully read by the user.",
+            "examples": [
+              false
+            ]
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Timestamp of when the media was completed.",
+            "examples": [
+              "2026-05-24T17:21:12Z"
+            ]
+          },
+          "percentage_completed": {
+            "type": "number",
+            "format": "double",
+            "description": "Reading progress as a percentage of completion.",
+            "examples": [
+              0.986
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when this progress started.",
+            "examples": [
+              "2026-03-24T16:33:19Z"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of when this progrses was updated.",
+            "examples": [
+              "2026-05-24T17:21:12Z"
+            ]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "api_token": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "authorization",
+        "description": "The API token used to authenticate requests."
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "The authentication cookie used to authorize user requests."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "library",
+      "description": "Library resources"
+    },
+    {
+      "name": "media",
+      "description": "Media management"
+    },
+    {
+      "name": "metadata",
+      "description": "Metadata resouces"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication and authorization"
+    },
+    {
+      "name": "tokens",
+      "description": "Management of API tokens"
+    },
+    {
+      "name": "filesystem",
+      "description": "Filesystem operations"
+    },
+    {
+      "name": "system",
+      "description": "System state"
+    },
+    {
+      "name": "koreader",
+      "description": "KOReader synchronization"
+    }
+  ]
+}
