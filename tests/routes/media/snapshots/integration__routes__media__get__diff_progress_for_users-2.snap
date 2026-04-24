@@ -1,0 +1,22 @@
+---
+source: tests/routes/media/get.rs
+expression: body_a
+---
+{
+  "cover_path": null,
+  "created_at": "[datetime]",
+  "extension": "epub",
+  "id": 1,
+  "library_id": 1,
+  "metadata": null,
+  "name": "book",
+  "path": "book.epub",
+  "progress": {
+    "completed": false,
+    "completed_at": "[datetime]",
+    "percentage_completed": "0.5000",
+    "started_at": "[datetime]",
+    "updated_at": "[datetime]"
+  },
+  "size": 1
+}

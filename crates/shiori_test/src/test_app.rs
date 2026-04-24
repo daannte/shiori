@@ -45,7 +45,7 @@ impl TestApp {
 
     pub async fn init_with_user() -> (TestApp, MockAnonymousUser, MockJwtUser) {
         let (test_app, anon) = TestApp::init_empty().await;
-        let user = test_app.db_new_user("shinei").await;
+        let user = test_app.new_user("shinei").await;
         (test_app, anon, user)
     }
 
@@ -61,7 +61,7 @@ impl TestApp {
         self.0.test_database.async_connect().await
     }
 
-    pub async fn db_new_user(&self, username: &str) -> MockJwtUser {
+    pub async fn new_user(&self, username: &str) -> MockJwtUser {
         let conn = self.db_conn().await;
         let new_user = NewUser {
             username,
