@@ -57,7 +57,12 @@ async fn get_media_cover(
 
     let path = media.cover_path.ok_or_else(not_found)?;
 
-    let data = get_cover(path::Path::new(&path)).await?;
+    let data = get_cover(path::Path::new(&path)).await.map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            return not_found();
+        }
+        e.into()
+    })?;
 
     Ok(data)
 }
