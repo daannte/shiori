@@ -3,6 +3,7 @@ use std::{ffi::OsStr, path};
 use axum::{
     Json,
     extract::{Path, State},
+    response::NoContent,
 };
 use chrono::NaiveDate;
 use diesel_async::{AsyncConnection, scoped_futures::ScopedFutureExt};
@@ -111,12 +112,15 @@ async fn get_media(
         ("id" = i32, Path, description = "Id of the media item")
     ),
     responses(
-        (status = 204, description = "Successfully delete media"),
+        (status = 204, description = "Successfully deleted media"),
         (status = 404, description = "Media not found"),
         (status = 500, description = "Internal server error")
     )
 )]
-async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) -> AppResult<()> {
+async fn delete_media(
+    Path(media_id): Path<i32>,
+    State(app): State<AppState>,
+) -> AppResult<NoContent> {
     let mut conn = app.db().await?;
 
     let media = Media::delete(&mut conn, media_id).await?;
@@ -127,7 +131,7 @@ async fn delete_media(Path(media_id): Path<i32>, State(app): State<AppState>) ->
 
     delete_file(path::Path::new(&media.path)).await?;
 
-    Ok(())
+    Ok(NoContent)
 }
 
 #[derive(Default, Deserialize, utoipa::ToSchema)]

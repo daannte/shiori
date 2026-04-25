@@ -947,7 +947,7 @@ expression: newest.to_pretty_json().unwrap()
         ],
         "responses": {
           "204": {
-            "description": "Successfully delete media"
+            "description": "Successfully deleted media"
           },
           "404": {
             "description": "Media not found"

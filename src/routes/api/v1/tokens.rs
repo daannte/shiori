@@ -1,6 +1,7 @@
 use axum::{
     Json,
     extract::{Path, State},
+    response::NoContent,
 };
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -141,7 +142,7 @@ async fn delete_token(
     State(app): State<AppState>,
     AuthUser(auth): AuthUser,
     Path(key_id): Path<String>,
-) -> AppResult<()> {
+) -> AppResult<NoContent> {
     let mut conn = app.db().await?;
 
     let num_deleted = ApiToken::delete(&mut conn, key_id, auth.user()).await?;
@@ -150,5 +151,5 @@ async fn delete_token(
         return Err(not_found());
     }
 
-    Ok(())
+    Ok(NoContent)
 }

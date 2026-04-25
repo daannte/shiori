@@ -1153,7 +1153,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successfully delete media */
+            /** @description Successfully deleted media */
             204: {
                 headers: {
                     [name: string]: unknown;
