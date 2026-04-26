@@ -5,7 +5,7 @@ use shiori_core::{App, db};
 use shiori_database::models::{NewLibrary, NewUser};
 
 use crate::{
-    mock_users::{MockAnonymousUser, MockJwtUser},
+    mock_users::{MockAnonymousUser, MockJwtUser, MockTokenUser},
     test_db::TestDatabase,
 };
 
@@ -49,6 +49,13 @@ impl TestApp {
         (test_app, anon, user)
     }
 
+    pub async fn init_with_token() -> (TestApp, MockAnonymousUser, MockJwtUser, MockTokenUser) {
+        let (test_app, anon) = TestApp::init_empty().await;
+        let user = test_app.new_user("shinei").await;
+        let token = user.new_token("test").await;
+        (test_app, anon, user, token)
+    }
+
     pub fn as_inner(&self) -> &App {
         &self.0.app
     }
@@ -61,6 +68,7 @@ impl TestApp {
         self.0.test_database.async_connect().await
     }
 
+    /// Create new user
     pub async fn new_user(&self, username: &str) -> MockJwtUser {
         let conn = self.db_conn().await;
         let new_user = NewUser {
