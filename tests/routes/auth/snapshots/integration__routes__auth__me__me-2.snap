@@ -1,0 +1,10 @@
+---
+source: tests/routes/auth/me.rs
+expression: response.json()
+---
+{
+  "created_at": "[datetime]",
+  "id": 1,
+  "is_server_owner": false,
+  "username": "shinei"
+}
