@@ -1,0 +1,13 @@
+---
+source: tests/routes/tokens/post.rs
+expression: response.json()
+---
+{
+  "created_at": "[datetime]",
+  "expires_at": null,
+  "id": 1,
+  "key_id": "[key_id]",
+  "last_used_at": "[datetime]",
+  "name": "cool token",
+  "plaintoken": "[plaintoken]"
+}

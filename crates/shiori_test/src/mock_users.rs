@@ -1,3 +1,4 @@
+use chrono::Utc;
 use http::header;
 use shiori_database::{
     models::{ApiToken, NewApiToken, NewRefreshToken, User},
@@ -66,7 +67,11 @@ impl MockJwtUser {
     }
 
     /// Creates a new `MockTokenUser`
-    pub async fn new_token(&self, name: &str) -> MockTokenUser {
+    pub async fn new_token(
+        &self,
+        name: &str,
+        expires_at: Option<chrono::DateTime<Utc>>,
+    ) -> MockTokenUser {
         let conn = self.app().db_conn().await;
 
         let plaintoken = Token::default();
@@ -76,7 +81,7 @@ impl MockJwtUser {
             name,
             key_id: plaintoken.key_id(),
             token_hash: plaintoken.hashed().hash,
-            expires_at: None,
+            expires_at,
             last_used_at: None,
         };
 

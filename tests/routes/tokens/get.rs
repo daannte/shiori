@@ -61,13 +61,11 @@ async fn user_cannot_access_other_users_tokens() {
 async fn ignore_expired_tokens() {
     let (_, _, user, _) = TestApp::init_with_token().await;
 
-    let body = serde_json::json!({
-        "expires_at": chrono::Utc::now() - chrono::Duration::seconds(5),
-        "name": "cool token"
-    });
-
-    let response = user.post::<()>("/api/v1/tokens", body.to_string()).await;
-    assert_snapshot!(response.status(), @"200 OK");
+    user.new_token(
+        "test token",
+        Some(chrono::Utc::now() - chrono::Duration::seconds(5)),
+    )
+    .await;
 
     let response = user.get::<()>("/api/v1/tokens").await;
     assert_snapshot!(response.status(), @"200 OK");

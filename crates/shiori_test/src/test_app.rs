@@ -53,7 +53,7 @@ impl TestApp {
     pub async fn init_with_token() -> (TestApp, MockAnonymousUser, MockJwtUser, MockTokenUser) {
         let (test_app, anon) = TestApp::init_empty().await;
         let user = test_app.new_user("shinei", true).await;
-        let token = user.new_token("test").await;
+        let token = user.new_token("test", None).await;
         (test_app, anon, user, token)
     }
 

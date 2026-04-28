@@ -6,6 +6,7 @@ edition = "2024"
 axum = { version = "0.8.8", features = ["multipart", "macros"] }
 derive_more = { version = "2.1.1", features = ["deref", "deref_mut", "display"] }
 bytes = "1.11.1"
+chrono = { version = "0.4.44", default-features = false, features = ["serde"] }
 claims = "0.8.0"
 diesel = { version = "2.3.7", features = ["chrono", "postgres"] }
 diesel-async = { version = "0.7.4", features = ["postgres", "r2d2"] }

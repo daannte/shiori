@@ -1498,8 +1498,14 @@ expression: newest.to_pretty_json().unwrap()
               }
             }
           },
+          "400": {
+            "description": "Bad Request"
+          },
           "401": {
             "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid request body"
           },
           "500": {
             "description": "Internal server error"
