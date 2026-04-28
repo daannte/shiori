@@ -1,0 +1,7 @@
+---
+source: tests/meta.rs
+expression: response.json()
+---
+{
+  "initialized": false
+}
