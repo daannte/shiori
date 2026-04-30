@@ -81,7 +81,7 @@ impl Token {
     pub fn hashed(&self) -> HashedToken {
         HashedToken {
             key_id: self.key_id.clone(),
-            hash: HashedToken::hash(&self.secret.expose_secret()).into(),
+            hash: HashedToken::hash(self.secret.expose_secret()).into(),
         }
     }
 }

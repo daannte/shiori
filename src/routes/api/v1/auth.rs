@@ -1,5 +1,6 @@
 use axum::{Json, extract::State, http::StatusCode, middleware, response::IntoResponse};
 use axum_extra::extract::CookieJar;
+use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use shiori_api_types::EncodableUser;
 use shiori_database::models::RefreshToken as RefreshModel;
@@ -42,8 +43,11 @@ pub struct AuthRequest {
     username: String,
 
     /// Password associated with the account.
-    #[schema(examples("supercoolpass"))]
-    password: String,
+    #[schema(
+        examples("supercoolpass"),
+        value_type = String
+    )]
+    password: SecretString,
 }
 
 /// Login
@@ -80,7 +84,7 @@ async fn login(
         })?;
 
     // TODO: Maybe lock account after 3 or 5 attempts?
-    let valid = verify_password(&user.hashed_password, &body.password);
+    let valid = verify_password(&user.hashed_password, body.password.expose_secret());
 
     if !valid {
         return Err(unauthorized("Invalid credentials"));
@@ -137,11 +141,13 @@ async fn register(
         }
     }
 
-    if body.password.len() < 8 {
+    let password = body.password.expose_secret();
+
+    if password.len() < 8 {
         return Err(bad_request("Password must be at least 8 characters"));
     }
 
-    let hash = hash_password(&body.password)?;
+    let hash = hash_password(password)?;
 
     let new_user = NewUser {
         username: &body.username,
